@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Edytuj zadanie{% endblock %}
+
+{% block content %}
+    <h1 class="my-4">Edytuj zadanie</h1>
+
+    <form method="POST" class="card p-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+        <a href="{% url 'todo_list' %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+{% endblock %}
