@@ -13,9 +13,9 @@ MOOD_CHOICES = [
 ]
 
 IDEA_STATUS = [
-    ("pending", "Oczekujące"),
-    ("in_progress", "W trakcie"),
-    ("completed", "Zakończone"),
+    ("pending", "💭 Oczekujące"),
+    ("in_progress", "⏳ W trakcie"),
+    ("completed", "✅ Zakończone"),
 ]
 
 class Task(models.Model):
@@ -25,6 +25,8 @@ class Task(models.Model):
     mood_choice = models.CharField(choices=MOOD_CHOICES, max_length=20, default="neutral")
     status = models.CharField(choices=IDEA_STATUS, max_length=30, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+
 
     def __str__(self):
         return self.title

@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from .models import Task
 from .forms import TaskForm
+from django.utils import timezone
 
 
 def todo_list(request):
@@ -13,7 +14,7 @@ def todo_list(request):
         form = TaskForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Dodano nowe zadanie!")
+            # messages.success(request, "Dodano nowe zadanie!")
             return redirect("todo_list")
     else:
         form = TaskForm()
@@ -27,8 +28,10 @@ def edit_task(request, task_id):
     if request.method == "POST":
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Zadanie zostało zaktualizowane!")
+            task = form.save(commit=False)
+            task.updated_at = timezone.now()
+            task.save()
+            # messages.success(request, "Zadanie zostało zaktualizowane!")
             return redirect("todo_list")
     else:
         form = TaskForm(instance=task)
@@ -41,7 +44,7 @@ def delete_task(request, task_id):
     """Usuwanie zadania"""
     task = get_object_or_404(Task, id=task_id)
     task.delete()
-    messages.warning(request, "Zadanie zostało usunięte!")
+    # messages.warning(request, "Zadanie zostało usunięte!")
     return redirect("todo_list")
 
 

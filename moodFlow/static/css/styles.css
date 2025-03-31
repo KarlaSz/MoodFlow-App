@@ -1,5 +1,5 @@
 .gradient-custom-2 {
-            background: linear-gradient(to right, rgba(126, 64, 246, 1), rgba(80, 139, 252, 1));
+            background: linear-gradient(to right, rgb(82, 246, 64), rgb(40, 60, 96));
             /*background: linear-gradient(to right, rgb(61, 216, 111), rgb(42, 73, 142));*/
             min-height: 100vh;
             display: flex;

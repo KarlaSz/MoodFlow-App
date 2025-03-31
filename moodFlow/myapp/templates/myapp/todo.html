@@ -1,4 +1,3 @@
-
 {% extends 'base.html' %}
 
 {% block title %}moodflow - Dziennik aktywności{% endblock %}
@@ -7,10 +6,52 @@
     <h1 class="my-4">Dziennik aktywności</h1>
 
     <!-- adding form task -->
-    <form method="POST" class="d-flex gap-2">
+    <form method="POST" class="row g-3">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Dodaj</button>
+
+        <div class="col-md-6">
+            <label for="{{ form.title.id }}" class="form-label">Tytuł</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <label for="id_url" class="form-label">Link</label>
+            {{ form.url }}
+            {% if form.url.errors %}
+                <div class="invalid-feedback d-block">{{ form.url.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <label for="id_mood_choice" class="form-label">Nastrój</label>
+            {{ form.mood_choice }}
+            {% if form.mood_choice.errors %}
+                <div class="invalid-feedback d-block">{{ form.mood_choice.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <label for="id_status" class="form-label">Status</label>
+            {{ form.status }}
+            {% if form.status.errors %}
+                <div class="invalid-feedback d-block">{{ form.status.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-12">
+            <label for="id_comment" class="form-label">Komentarz</label>
+            {{ form.comment }}
+            {% if form.comment.errors %}
+                <div class="invalid-feedback d-block">{{ form.comment.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-success">Dodaj</button>
+        </div>
     </form>
 
     <h5 class="mt-4">Historia zadania:</h5>
