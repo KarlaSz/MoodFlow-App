@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -14,58 +13,44 @@
 </head>
 <body>
 
-    <!-- Navbar -->
+    <!-- Navbar - umieszczony na górze i sticky -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">moodFlow</a>
+            <!-- Logo i kategorie po lewej stronie -->
+            <a class="navbar-brand" href="#">
+                moodFlow
+                <br>
+                <span class="small">Twoja przestrzeń</span>
+            </a>
             <a class="navbar-brand text-center mt-3" href="#">
                 <img src="{% static 'img/logo-male-bez-tla.png' %}" alt="Logo" class="logo">
             </a>
-            <!-- Ikony powiadomień i ustawień po prawej stronie -->
-            <ul class="navbar-nav ms-auto"> <!-- "ms-auto" wyrównuje elementy do prawej -->
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Brak aktualnie powiadomień">
-                        <i class="bi bi-bell"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="W budowie">
-                        <i class="bi bi-gear"></i>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
 
-    <!-- Sidebar + Main Content Wrapper -->
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div class="sidebar bg-dark">
-            <nav class="navbar navbar-expand-lg navbar-dark flex-column">
-                <ul class="navbar-nav w-100">
+            <!-- Przycisk rozwijania nawigacji na mniejszych ekranach -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                    aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Menu nawigacyjne -->
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav me-auto"> <!-- "me-auto" sprawia, że menu jest wyrównane do lewej -->
                     <li class="nav-item">
-                        <a class="nav-link active d-flex align-items-center">
-                            <i class="bi bi-house-door me-2"></i> Home
-                        </a>
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center">
-                            <i class="bi bi-airplane-engines me-2"></i> Podróże
-                        </a>
+                        <a class="nav-link" href="#">Podróże</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center">
-                            <i class="bi bi-umbrella me-2"></i> Outside
-                        </a>
+                        <a class="nav-link" href="#">Świat zewnętrzny</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center">
-                            <i class="bi bi-briefcase me-2"></i> Praca
-                        </a>
+                        <a class="nav-link" href="#">Praca</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle me-2"></i> Life manager
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            Life manager
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                             <li><a class="dropdown-item" href="#">Dziennik aktywności</a></li>
@@ -74,17 +59,68 @@
                         </ul>
                     </li>
                 </ul>
-            </nav>
-        </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="gradient-custom-2">
-                <div class="container my-4">
-                    <div class="d-flex justify-content-center">
-                        <div class="mask-custom">
-                            {% block content %}{% endblock %}
-                        </div>
+                 <!-- Ikony powiadomień i ustawień po prawej stronie -->
+                <ul class="navbar-nav ms-auto"> <!-- "ms-auto" wyrównuje elementy do prawej -->
+                    <!-- Notification icon z tooltipem (zmieniono placement na bottom) -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Brak aktualnie powiadomień">
+                            <i class="bi bi-bell"></i>
+                        </a>
+                    </li>
+                    <!-- Settings icon (zmieniono placement na bottom) -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="W budowie">
+                            <i class="bi bi-gear"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+<!--    &lt;!&ndash; Sidebar po lewej stronie &ndash;&gt;-->
+<!--    <div class="d-flex">-->
+<!--        <div class="sidebar bg-dark">-->
+<!--            <nav class="navbar navbar-expand-lg navbar-dark flex-column">-->
+
+<!--                &lt;!&ndash; Menu &ndash;&gt;-->
+<!--                <ul class="navbar-nav w-100">-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link active" href="#">Home</a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="#">Podróże</a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="#">Ouside</a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="#">Praca</a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item dropdown">-->
+<!--                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--                            Life manager-->
+<!--                        </a>-->
+<!--                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">-->
+<!--                            <li><a class="dropdown-item" href="#">Dziennik aktywności</a></li>-->
+<!--                            <li><a class="dropdown-item" href="#">Finanse</a></li>-->
+<!--                            <li><a class="dropdown-item" href="#">Zdrowie</a></li>-->
+<!--                        </ul>-->
+<!--                    </li>-->
+
+
+<!--                </ul>-->
+<!--            </nav>-->
+<!--        </div>-->
+
+    <!-- Main content area -->
+    <div class="main-content">
+        <div class="gradient-custom-2">
+            <div class="container my-4">
+                <div class="d-flex justify-content-center">
+                    <div class="mask-custom">
+                        {% block content %}{% endblock %}
                     </div>
                 </div>
             </div>
@@ -93,7 +129,7 @@
 
     <!-- JS Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- notification and settings JS -->
+     <!-- notification and settings JS -->
     <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
