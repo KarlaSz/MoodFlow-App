@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import home, finance, news, todo_list, edit_task, delete_task, toggle_done, api_list_tasks, api_task_details
+from .views import home, finance, news, chat, todo_list, edit_task, delete_task, toggle_done, api_list_tasks, api_task_details
 
 urlpatterns = [
     # URL-e dla głównych widoków
@@ -14,5 +14,7 @@ urlpatterns = [
     # API endpoints (związane z API)
     path('api/tasks/', api_list_tasks, name='api_list_tasks'),  # Lista zadań API
     path('api/task/<int:task_id>/', api_task_details, name='api_task_details'),  # Szczegóły zadania API
+
+    path('chat/', chat, name='chat'),
 ]
 

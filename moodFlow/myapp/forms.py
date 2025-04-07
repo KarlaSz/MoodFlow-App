@@ -13,3 +13,7 @@ class TaskForm(forms.ModelForm):
             "mood_choice": forms.Select(attrs={"class": "form-select"}),
             "status": forms.Select(attrs={"class": "form-select"}),
         }
+
+class ChatForm(forms.Form):
+    prompt = forms.CharField(label="Prompt", widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Wpisz pytanie..."}))
+    conversation_history = forms.CharField(required=False, widget=forms.HiddenInput())

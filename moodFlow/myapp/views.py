@@ -5,8 +5,10 @@ from django.views.decorators.http import require_POST
 from .models import Task
 from .forms import TaskForm
 from django.utils import timezone
+from openai import OpenAI
 import json
 
+from .forms import ChatForm
 
 def home(request):
     """Strona główna - ogolna interakcja"""
@@ -21,6 +23,8 @@ def finance(request):
 def news(request):
     """Strona news"""
     return render(request, "myapp/wiadomosci.html")
+
+
 
 def todo_list(request):
     """dziennik  - lista zadań + dodawanie nowych"""
@@ -93,3 +97,68 @@ def api_task_details(request, task_id):
         "created_at": task.created_at,
     }
     return JsonResponse(task_data)
+
+
+def get_api_key():
+    """Pobiera klucz API z pliku openai_key.txt"""
+    try:
+        with open('../openai_key.txt', 'r') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        print("Błąd: Plik openai_key.txt nie został znaleziony.")
+        return None
+    except Exception as e:
+        print(f"Błąd odczytu pliku z kluczem API: {str(e)}")
+        return None
+
+
+def chat(request):
+    preprompt = """Jesteś asystentem mojej firmy webszyk. Masz za zadanie odpowiadac klientom na temat naszych produktow. Firma zajmuje sie:
+        1. tylko i wylacznie sprzedaz oprogramowania na win11, linux Debian 13
+        2. Tylko i wylacznie sprzedaz oprogramowania biurowego MS office 365
+
+        Nie prponuj innych produktow tylko nasze.
+
+
+        Tu jest pierwsze pytanie klienta:
+        """
+    messages = []
+    api_key = get_api_key()
+    error_message = None
+    model = "gpt-3.5-turbo"
+    assistant_response = None
+    response = None
+
+    if not api_key:
+        error_message = "Błędna konfiguracja aplikacji. Skontaktuj się z administratorem."
+
+    form = ChatForm(request.POST or None)
+
+    if request.method == 'POST' and form.is_valid() and api_key:
+
+        try:
+            user_prompt = form.cleaned_data["prompt"]
+            history_json = form.cleaned_data.get("conversation_history") or "[]"
+            messages = json.loads(history_json)
+            if messages == []:
+                messages.append({"role": "user", "content": preprompt})
+
+            client = OpenAI(api_key=api_key)
+            user_prompt = preprompt + user_prompt
+            messages.append({"role": "user", "content": user_prompt})
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.7
+            )
+            assistant_response = response.choices[0].message.content
+            messages.append({"role": "assistant", "content": assistant_response})
+
+            form = ChatForm(initial={"conversation_history": json.dumps(messages)})
+
+        except Exception as e:
+            error_message = f"Wystąpił błąd: {str(e)}"
+
+    return render(request, "myapp/chat.html",
+                  {"form": form, "error_message": error_message,
+                   "assistant_response": assistant_response, "response": response, "messages": messages})
