@@ -7,8 +7,14 @@ from .forms import TaskForm
 from django.utils import timezone
 
 
+def home(request):
+    """Strona główna - ogolna interakcja"""
+
+    return render(request, "myapp/home.html")
+
+
 def todo_list(request):
-    """Strona główna - lista zadań + dodawanie nowych"""
+    """dziennik  - lista zadań + dodawanie nowych"""
     tasks = Task.objects.all().order_by("created_at")
     if request.method == "POST":
         form = TaskForm(request.POST)
@@ -20,7 +26,6 @@ def todo_list(request):
         form = TaskForm()
 
     return render(request, "myapp/todo.html", {"tasks": tasks, "form": form})
-
 
 def edit_task(request, task_id):
     """Edycja istniejącego zadania"""

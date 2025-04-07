@@ -1,0 +1,134 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}moodFlow - Twoja przestrzeń{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sekcja powitalna -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-4 mb-3">Witaj w moodFlow</h1>
+            <p class="lead">Twoja osobista przestrzeń do zarządzania życiem i czasem</p>
+            <p>Odkryj spokój i kontrolę w cyfrowym świecie. moodFlow to Twoje bezpieczne środowisko, w którym Ty decydujesz, co chcesz czytać, oglądać i czego słuchać.</p>
+        </div>
+    </div>
+
+    <!-- Widget pogodowy -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-dark text-white">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-cloud-sun"></i> Pogoda</h5>
+                    <span id="current-date"></span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div id="weather-icon" class="mb-2">
+                                <i class="bi bi-sun" style="font-size: 3rem;"></i>
+                            </div>
+                            <h3 id="temperature">22°C</h3>
+                            <p id="weather-description">Słonecznie</p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-6 col-md-4 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-droplet me-2"></i>
+                                        <div>
+                                            <small>Wilgotność</small>
+                                            <p class="mb-0" id="humidity">45%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-wind me-2"></i>
+                                        <div>
+                                            <small>Wiatr</small>
+                                            <p class="mb-0" id="wind-speed">12 km/h</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-eye me-2"></i>
+                                        <div>
+                                            <small>Widoczność</small>
+                                            <p class="mb-0" id="visibility">10 km</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button class="btn btn-sm btn-outline-light" id="refresh-weather">
+                                    <i class="bi bi-arrow-clockwise"></i> Odśwież
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sekcja szybkich akcji -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">Co chcesz zrobić dzisiaj?</h4>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-dark text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-journal-text mb-3" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Dziennik</h5>
+                    <p class="card-text">Zapisz swoje myśli, plany i refleksje</p>
+                    <a href="#" class="btn btn-outline-light">Otwórz dziennik</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-dark text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-cash-coin mb-3" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Finanse</h5>
+                    <p class="card-text">Zarządzaj swoimi wydatkami i budżetem</p>
+                    <a href="#" class="btn btn-outline-light">Sprawdź finanse</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-dark text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-robot mb-3" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Agent AI</h5>
+                    <p class="card-text">Porozmawiaj ze swoim osobistym asystentem</p>
+                    <a href="#" class="btn btn-outline-light">Uruchom agenta</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inspiracja na dziś -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card bg-dark text-white">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Inspiracja na dziś</h5>
+                </div>
+                <div class="card-body">
+                    <blockquote class="blockquote mb-0">
+                        <p id="daily-quote">"Najlepszym sposobem przewidzenia przyszłości jest jej tworzenie."</p>
+                        <footer class="blockquote-footer text-white-50">Peter Drucker</footer>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for dynamic elements -->
+    <script src="{% static 'js/home.js' %}"></script>
+
+{% endblock %}
