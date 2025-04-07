@@ -16,5 +16,6 @@ urlpatterns = [
     path('api/task/<int:task_id>/', api_task_details, name='api_task_details'),  # Szczegóły zadania API
 
     path('chat/', chat, name='chat'),
+
 ]
 
