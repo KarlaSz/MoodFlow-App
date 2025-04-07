@@ -1,0 +1,61 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Chat{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="bg-light p-4 rounded shadow-sm">
+                <h1 class="text-center mb-4">ChatGPT</h1>
+
+
+
+            {% if error_message %}
+            <div class="alert alert-danger">
+            {{ error_message }}
+            </div>
+            {% endif %}
+
+            {% if messages %}
+                <h2> Historia rozmowy: </h2>
+
+                {% for message in messages %}
+                    {% if forloop.counter0 > 0 %}
+                         <div class="alert bg-{% if message.role == 'user'  %}secondary{% else %}info{% endif %}">
+                    <p>{% if message.role == 'user'  %}
+                        <strong>Ty:</strong>
+                        {% else %}
+                        <strong>ChatGPT:</strong>
+                        {% endif %}
+
+                        {{message.content }} </p>
+                    </div>
+                 {% endif %}
+                {% endfor %}
+            {% endif %}
+
+              <form method="POST" class="my-4">
+                {% csrf_token %}
+                {{ form.conversation_history }}
+                {{ form.prompt }}
+                <button type="submit" class="btn btn-success w-100 my-3">Wyślij</button>
+            </form>
+
+<!--            {% if assistant_response %}-->
+<!--                <div class="alert alert-success">-->
+<!--                    <p>Chat odpowiedział:</p>-->
+<!--                    <p>{{ assistant_response }}</p>-->
+<!--                </div>-->
+<!--            {% endif %}-->
+<!--            {% if response %}-->
+<!--                <div class="alert alert-info">-->
+<!--                    <p>Dane debug:</p>-->
+<!--                    <p>{{ response }}</p>-->
+<!--                </div>-->
+<!--            {% endif %}-->
+    </div>
+        </div>
+    </div>
+</div>
+            {% endblock %}

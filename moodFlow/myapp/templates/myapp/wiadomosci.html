@@ -2,15 +2,11 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid">
-  <div class="row justify-content-center">
-    <div class="col-lg-10 mask-custom">
-      <div class="mb-4 d-flex justify-content-between align-items-center">
-        <h1>Świat Zewnętrzny</h1>
-        <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addSourceModal">
-          <i class="fas fa-plus me-2"></i>Dodaj źródło
-        </button>
-      </div>
+
+    <h1>Świat Zewnętrzny</h1>
+<!--        <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addSourceModal">-->
+<!--          <i class="fas fa-plus me-2"></i>Dodaj źródło-->
+<!--        </button>-->
 
 <!--      &lt;!&ndash; Kategorie &ndash;&gt;-->
 <!--      <div class="mb-4">-->
@@ -229,52 +225,51 @@
         </nav>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Modal dodawania źródła -->
-<div class="modal fade" id="addSourceModal" tabindex="-1" aria-labelledby="addSourceModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addSourceModalLabel">Dodaj nowe źródło</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label for="sourceUrl" class="form-label">URL strony</label>
-            <input type="url" class="form-control" id="sourceUrl" placeholder="https://example.com">
-          </div>
-          <div class="mb-3">
-            <label for="sourceCategory" class="form-label">Kategoria</label>
-            <select class="form-select" id="sourceCategory">
-              <option selected>Wybierz kategorię</option>
-              <option value="video">Video</option>
-              <option value="social">Social Media</option>
-              <option value="web">Web</option>
-              <option value="business">Biznes</option>
-              <option value="tech">Technologia</option>
-              <option value="health">Zdrowie</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="sourceKeywords" class="form-label">Słowa kluczowe (oddzielone przecinkami)</label>
-            <input type="text" class="form-control" id="sourceKeywords" placeholder="AI, rozwój osobisty, finanse">
-          </div>
-          <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="notificationCheck" checked>
-            <label class="form-check-label" for="notificationCheck">
-              Powiadomienia o nowych treściach
-            </label>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Anuluj</button>
-        <button type="button" class="btn btn-light">Dodaj źródło</button>
-      </div>
-    </div>
-  </div>
-</div>
+
+<!--&lt;!&ndash; Modal dodawania źródła &ndash;&gt;-->
+<!--<div class="modal fade" id="addSourceModal" tabindex="-1" aria-labelledby="addSourceModalLabel" aria-hidden="true">-->
+<!--  <div class="modal-dialog">-->
+<!--    <div class="modal-content bg-dark text-white">-->
+<!--      <div class="modal-header">-->
+<!--        <h5 class="modal-title" id="addSourceModalLabel">Dodaj nowe źródło</h5>-->
+<!--        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>-->
+<!--      </div>-->
+<!--      <div class="modal-body">-->
+<!--        <form>-->
+<!--          <div class="mb-3">-->
+<!--            <label for="sourceUrl" class="form-label">URL strony</label>-->
+<!--            <input type="url" class="form-control" id="sourceUrl" placeholder="https://example.com">-->
+<!--          </div>-->
+<!--          <div class="mb-3">-->
+<!--            <label for="sourceCategory" class="form-label">Kategoria</label>-->
+<!--            <select class="form-select" id="sourceCategory">-->
+<!--              <option selected>Wybierz kategorię</option>-->
+<!--              <option value="video">Video</option>-->
+<!--              <option value="social">Social Media</option>-->
+<!--              <option value="web">Web</option>-->
+<!--              <option value="business">Biznes</option>-->
+<!--              <option value="tech">Technologia</option>-->
+<!--              <option value="health">Zdrowie</option>-->
+<!--            </select>-->
+<!--          </div>-->
+<!--          <div class="mb-3">-->
+<!--            <label for="sourceKeywords" class="form-label">Słowa kluczowe (oddzielone przecinkami)</label>-->
+<!--            <input type="text" class="form-control" id="sourceKeywords" placeholder="AI, rozwój osobisty, finanse">-->
+<!--          </div>-->
+<!--          <div class="form-check mb-3">-->
+<!--            <input class="form-check-input" type="checkbox" id="notificationCheck" checked>-->
+<!--            <label class="form-check-label" for="notificationCheck">-->
+<!--              Powiadomienia o nowych treściach-->
+<!--            </label>-->
+<!--          </div>-->
+<!--        </form>-->
+<!--      </div>-->
+<!--      <div class="modal-footer">-->
+<!--        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Anuluj</button>-->
+<!--        <button type="button" class="btn btn-light">Dodaj źródło</button>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
 {% endblock %}
