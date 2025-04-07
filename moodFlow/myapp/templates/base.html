@@ -23,7 +23,7 @@
 <!--                <span class="small">Twoja przestrzeń</span>-->
             </a>
            <a class="navbar-brand text-center mt-3" href="#">
-                <img src="{% static 'img/logo-male-bez-tla.png' %}" alt="Logo" class="logo pulsowanie">
+                <img src="{% static 'img/logo-male-bez-tla.png' %}" alt="Logo" class="logo">
 
             </a>
 
@@ -44,11 +44,11 @@
                         <a class="nav-link" href="#">Podróże</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Świat zewnętrzny</a>
+                        <a class="nav-link" href="{% url 'news' %}">Świat zewnętrzny</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Praca</a>
-                    </li>
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="#">Praca</a>-->
+<!--                    </li>-->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
@@ -56,7 +56,7 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                             <li><a class="dropdown-item" href="{% url 'todo_list' %}">Dziennik aktywności</a></li>
-                            <li><a class="dropdown-item" href="#">Finanse</a></li>
+                            <li><a class="dropdown-item" href="{% url 'finance' %}">Finanse</a></li>
                             <li><a class="dropdown-item" href="#">Zdrowie</a></li>
                         </ul>
                     </li>

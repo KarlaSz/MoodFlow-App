@@ -12,6 +12,14 @@ def home(request):
 
     return render(request, "myapp/home.html")
 
+def finance(request):
+    """Strona finansowa"""
+
+    return render(request, "myapp/finanse.html")
+
+def news(request):
+    """Strona news"""
+    return render(request, "myapp/wiadomosci.html")
 
 def todo_list(request):
     """dziennik  - lista zadań + dodawanie nowych"""

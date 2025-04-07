@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 mask-custom">
+      <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h1>Świat Zewnętrzny</h1>
+        <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addSourceModal">
+          <i class="fas fa-plus me-2"></i>Dodaj źródło
+        </button>
+      </div>
+
+<!--      &lt;!&ndash; Kategorie &ndash;&gt;-->
+<!--      <div class="mb-4">-->
+<!--        <ul class="nav nav-pills">-->
+<!--          <li class="nav-item">-->
+<!--            <a class="nav-link active" href="#">Wszystko</a>-->
+<!--          </li>-->
+<!--          <li class="nav-item">-->
+<!--            <a class="nav-link" href="#">Video</a>-->
+<!--          </li>-->
+<!--          <li class="nav-item">-->
+<!--            <a class="nav-link" href="#">Social Media</a>-->
+<!--          </li>-->
+<!--          <li class="nav-item">-->
+<!--            <a class="nav-link" href="#">Web</a>-->
+<!--          </li>-->
+<!--          <li class="nav-item">-->
+<!--            <a class="nav-link" href="#">Biznes</a>-->
+<!--          </li>-->
+<!--          <li class="nav-item">-->
+<!--            <a class="nav-link" href="#">Tech</a>-->
+<!--          </li>-->
+<!--        </ul>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Wyszukiwarka &ndash;&gt;-->
+<!--      <div class="mb-4">-->
+<!--        <div class="input-group">-->
+<!--          <input type="text" class="form-control" placeholder="Wyszukaj wiadomości...">-->
+<!--          <button class="btn btn-light" type="button">-->
+<!--            <i class="fas fa-search"></i>-->
+<!--          </button>-->
+<!--        </div>-->
+<!--      </div>-->
+
+
+      <!-- Kafelki wiadomości -->
+      <div class="row g-4">
+        <!-- Wiadomość 1 -->
+        <div class="col-md-4">
+          <div class="card bg-dark text-white h-100" style="border-radius: 15px;">
+            <div class="position-relative">
+              <div style="height: 160px; background-color: #333; border-radius: 15px 15px 0 0; display: flex; justify-content: center; align-items: center;">
+                <i class="fas fa-newspaper fa-3x"></i>
+              </div>
+              <span class="badge bg-primary position-absolute top-0 end-0 m-2">WEB</span>
+            </div>
+            <div class="card-body">
+              <div class="small mb-2">Business Insider • 2h temu</div>
+              <h5 class="card-title">Nowe trendy w technologii AI na rok 2025</h5>
+              <p class="card-text">Przegląd najnowszych trendów w rozwoju sztucznej inteligencji i ich wpływ na biznes.</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-bookmark me-1"></i>Zapisz
+                </button>
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-external-link-alt me-1"></i>Czytaj
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wiadomość 2 -->
+        <div class="col-md-4">
+          <div class="card bg-dark text-white h-100" style="border-radius: 15px;">
+            <div class="position-relative">
+              <div style="height: 160px; background-color: #333; border-radius: 15px 15px 0 0; display: flex; justify-content: center; align-items: center;">
+                <i class="fab fa-youtube fa-3x"></i>
+              </div>
+              <span class="badge bg-danger position-absolute top-0 end-0 m-2">VIDEO</span>
+            </div>
+            <div class="card-body">
+              <div class="small mb-2">YouTube • 1d temu</div>
+              <h5 class="card-title">Jak efektywnie zarządzać czasem - poradnik</h5>
+              <p class="card-text">Praktyczne wskazówki jak lepiej organizować swój dzień i zwiększyć produktywność.</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-bookmark me-1"></i>Zapisz
+                </button>
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-play me-1"></i>Obejrzyj
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wiadomość 3 -->
+        <div class="col-md-4">
+          <div class="card bg-dark text-white h-100" style="border-radius: 15px;">
+            <div class="position-relative">
+              <div style="height: 160px; background-color: #333; border-radius: 15px 15px 0 0; display: flex; justify-content: center; align-items: center;">
+                <i class="fab fa-twitter fa-3x"></i>
+              </div>
+              <span class="badge bg-info position-absolute top-0 end-0 m-2">SOCIAL</span>
+            </div>
+            <div class="card-body">
+              <div class="small mb-2">Twitter • 5h temu</div>
+              <h5 class="card-title">Najnowsze odkrycia w dziedzinie psychologii pozytywnej</h5>
+              <p class="card-text">Dyskusja ekspertów na temat wpływu pozytywnego myślenia na zdrowie psychiczne.</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-bookmark me-1"></i>Zapisz
+                </button>
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-external-link-alt me-1"></i>Czytaj
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wiadomość 4 -->
+        <div class="col-md-4">
+          <div class="card bg-dark text-white h-100" style="border-radius: 15px;">
+            <div class="position-relative">
+              <div style="height: 160px; background-color: #333; border-radius: 15px 15px 0 0; display: flex; justify-content: center; align-items: center;">
+                <i class="fas fa-chart-line fa-3x"></i>
+              </div>
+              <span class="badge bg-success position-absolute top-0 end-0 m-2">BIZNES</span>
+            </div>
+            <div class="card-body">
+              <div class="small mb-2">Forbes • 3h temu</div>
+              <h5 class="card-title">Strategie oszczędzania na niepewne czasy</h5>
+              <p class="card-text">Eksperci finansowi radzą jak zabezpieczyć swoje finanse w obliczu niestabilnej gospodarki.</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-bookmark me-1"></i>Zapisz
+                </button>
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-external-link-alt me-1"></i>Czytaj
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wiadomość 5 -->
+        <div class="col-md-4">
+          <div class="card bg-dark text-white h-100" style="border-radius: 15px;">
+            <div class="position-relative">
+              <div style="height: 160px; background-color: #333; border-radius: 15px 15px 0 0; display: flex; justify-content: center; align-items: center;">
+                <i class="fas fa-heartbeat fa-3x"></i>
+              </div>
+              <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2">ZDROWIE</span>
+            </div>
+            <div class="card-body">
+              <div class="small mb-2">Health.com • 1d temu</div>
+              <h5 class="card-title">Medytacja jako sposób na redukcję stresu</h5>
+              <p class="card-text">Badania potwierdzają skuteczność regularnej medytacji w walce ze stresem i lękiem.</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-bookmark me-1"></i>Zapisz
+                </button>
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-external-link-alt me-1"></i>Czytaj
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wiadomość 6 -->
+        <div class="col-md-4">
+          <div class="card bg-dark text-white h-100" style="border-radius: 15px;">
+            <div class="position-relative">
+              <div style="height: 160px; background-color: #333; border-radius: 15px 15px 0 0; display: flex; justify-content: center; align-items: center;">
+                <i class="fas fa-laptop-code fa-3x"></i>
+              </div>
+              <span class="badge bg-primary position-absolute top-0 end-0 m-2">TECH</span>
+            </div>
+            <div class="card-body">
+              <div class="small mb-2">TechCrunch • 6h temu</div>
+              <h5 class="card-title">Rozwój technologii self-hosted - kontroluj swoje dane</h5>
+              <p class="card-text">Coraz więcej osób decyduje się na własne hostowanie aplikacji w trosce o prywatność.</p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-bookmark me-1"></i>Zapisz
+                </button>
+                <button class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-external-link-alt me-1"></i>Czytaj
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paginacja -->
+      <div class="mt-4 d-flex justify-content-center">
+        <nav aria-label="Page navigation">
+          <ul class="pagination">
+            <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Poprzednia</a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+              <a class="page-link" href="#">Następna</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal dodawania źródła -->
+<div class="modal fade" id="addSourceModal" tabindex="-1" aria-labelledby="addSourceModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addSourceModalLabel">Dodaj nowe źródło</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="sourceUrl" class="form-label">URL strony</label>
+            <input type="url" class="form-control" id="sourceUrl" placeholder="https://example.com">
+          </div>
+          <div class="mb-3">
+            <label for="sourceCategory" class="form-label">Kategoria</label>
+            <select class="form-select" id="sourceCategory">
+              <option selected>Wybierz kategorię</option>
+              <option value="video">Video</option>
+              <option value="social">Social Media</option>
+              <option value="web">Web</option>
+              <option value="business">Biznes</option>
+              <option value="tech">Technologia</option>
+              <option value="health">Zdrowie</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="sourceKeywords" class="form-label">Słowa kluczowe (oddzielone przecinkami)</label>
+            <input type="text" class="form-control" id="sourceKeywords" placeholder="AI, rozwój osobisty, finanse">
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="notificationCheck" checked>
+            <label class="form-check-label" for="notificationCheck">
+              Powiadomienia o nowych treściach
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Anuluj</button>
+        <button type="button" class="btn btn-light">Dodaj źródło</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
