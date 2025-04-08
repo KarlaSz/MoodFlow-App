@@ -50,30 +50,52 @@
         </div>
 
         <div class="col-12 text-end">
-            <button type="submit" class="btn btn-success"><i class="bi bi-plus-circle"></i>Dodaj</button>
+            <button type="submit" class="btn btn-success"><i class="bi bi-plus-circle"></i> Dodaj zadanie</button>
         </div>
     </form>
 
-    <h5 class="mt-4">Lista zadań:</h5>
-    <ul class="list-group">
-        {% for task in tasks %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ task.title }}</strong>
-                    {% if task.comment %}<p class="mb-1"><small>{{ task.comment }}</small></p>{% endif %}
-                    <p class="mb-0">Nastrój: <strong>{{ task.get_mood_choice_display }}</strong></p>
-                    <p class="mb-0">Status: <strong>{{ task.get_status_display }}</strong></p>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{% url 'edit_task' task.id %}" class="btn btn-light btn-sm"><i class="bi bi-pencil"></i> Edytuj</a>
-                    <form action="{% url 'delete_task' task.id %}" method="POST">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-circle"></i> Usuń</button>
-                    </form>
-                </div>
-            </li>
-        {% empty %}
-            <li class="list-group-item text-muted">Brak zadań. Dodaj nowe!</li>
-        {% endfor %}
-    </ul>
+    <div class="card-header d-flex justify-content-between align-items-center mt-5">
+    <h5 class="mt-1">Lista zadań ({{ task_count }}):</h5>
+<!--        <h2 class="display-6">Masz {{ task_count }} zadań na swojej liście</h2>-->
+
+    <div class="dropdown">
+        <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+             Filtruj
+         </button>
+                                                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                                    <li><a class="dropdown-item" href="{% url 'todo_list' %}" data-filter="all">Wszystkie</a></li>
+                                                    <li><a class="dropdown-item" href="{% url 'todo_list' %}?status=completed" data-filter="completed">Ukończone</a></li>
+                                                    <li><a class="dropdown-item" href="{% url 'todo_list' %}?status=in_progress" data-filter="in_progress">W trakcie</a></li>
+                                                    <li><a class="dropdown-item" href="{% url 'todo_list' %}?status=pending" data-filter="pending">Zaplanowane</a></li>
+                                                </ul>
+         </div>
+    </div>
+
+    <div class="card-body task-list" style="max-height: 600px; overflow-y: auto;">
+        <ul class="list-group">
+            {% for task in tasks %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ task.title }}</strong><br>
+                        {% if task.comment %}<p class="mb-1"><small>{{ task.comment }}</small></p>{% endif %}<br>
+    <!--                    <p class="mb-0">Nastrój: <strong>{{ task.get_mood_choice_display }}</strong></p>-->
+                        <span class="mb-0 badge bg-info me-2">Nastrój: {{ task.get_mood_choice_display }}</span><br>
+                        <span class="mb-0 badge {% if task.status == 'completed' %}bg-success{% elif task.status == 'pending' %}bg-secondary{% else %}bg-secondary{% endif %}">
+                                 Status: {{ task.get_status_display }}
+                            </span>
+
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'edit_task' task.id %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil"></i> Edytuj</a>
+                        <form action="{% url 'delete_task' task.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-circle"></i> Usuń</button>
+                        </form>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">Brak zadań w tym statusie</li>
+            {% endfor %}
+        </ul>
+    </div>
 {% endblock %}

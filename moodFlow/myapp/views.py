@@ -28,7 +28,17 @@ def news(request):
 
 def todo_list(request):
     """dziennik  - lista zadań + dodawanie nowych"""
-    tasks = Task.objects.all().order_by("created_at")
+
+    status_filter = request.GET.get("status")  # np. ?status=pending
+
+    if status_filter:
+        print("STATUS FILTER:", status_filter)  # 👈 zobaczysz w terminalu
+        tasks = Task.objects.filter(status=status_filter).order_by("-created_at")
+    else:
+        tasks = Task.objects.all().order_by("-created_at")
+
+    task_count = tasks.count()
+
     if request.method == "POST":
         form = TaskForm(request.POST)
         if form.is_valid():
@@ -38,7 +48,11 @@ def todo_list(request):
     else:
         form = TaskForm()
 
-    return render(request, "myapp/todo.html", {"tasks": tasks, "form": form})
+    return render(request, "myapp/todo.html",
+                  {"tasks": tasks,
+                   "form": form,
+                   'task_count': task_count,
+                   "status_filter": status_filter,})
 
 def edit_task(request, task_id):
     """Edycja istniejącego zadania"""
