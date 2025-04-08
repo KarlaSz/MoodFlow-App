@@ -165,10 +165,26 @@ def chat(request):
             assistant_response = response.choices[0].message.content
             messages.append({"role": "assistant", "content": assistant_response})
 
+            # Jeśli to zapytanie AJAX, zwracamy dane w formacie JSON
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success',
+                    'assistant_response': assistant_response,
+                    'conversation_history': json.dumps(messages)
+                })
+
+            # Dla normalnego żądania POST, renderujemy stronę jak wcześniej
             form = ChatForm(initial={"conversation_history": json.dumps(messages)})
 
         except Exception as e:
             error_message = f"Wystąpił błąd: {str(e)}"
+
+            # Jeśli to zapytanie AJAX, zwracamy błąd w formacie JSON
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'error',
+                    'error_message': error_message
+                }, status=500)
 
     return render(request, "myapp/chat.html",
                   {"form": form, "error_message": error_message,

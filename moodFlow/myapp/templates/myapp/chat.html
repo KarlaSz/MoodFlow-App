@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Chat{% endblock %}
+{% block title %}Chat - twój asystent {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -9,56 +9,58 @@
             <div class="bg-light p-4 rounded shadow-sm">
                 <h1 class="display-4 text-dark mb-3">Twój asystent rozmowy</h1>
 
+                <div id="error-container" class="alert alert-danger d-none">
+                    <p id="error-message"></p>
+                </div>
 
+                <div id="chat-container">
+                    {% if messages %}
+                        <h2 class="display-6 text-dark mb-3">Historia rozmowy:</h2>
+                        <div id="chat-messages">
+                        {% for message in messages %}
+                            {% if forloop.counter0 > 0 %}
+                                <div class="alert bg-{% if message.role == 'user'  %}success{% else %}dark{% endif %}">
+                                    <p>{% if message.role == 'user'  %}
+                                        <strong>Ty:</strong>
+                                        <br>
+                                        {% else %}
+                                        <strong>ChatGPT:</strong>
+                                        <br>
+                                        {% endif %}
 
-            {% if error_message %}
-            <div class="alert alert-danger">
-            {{ error_message }}
-            </div>
-            {% endif %}
+                                        {{message.content }} </p>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <h2 class="display-6 text-dark mb-3">Historia rozmowy:</h2>
+                        <div id="chat-messages">
+                            <!-- Tutaj będą dynamicznie dodawane wiadomości -->
+                        </div>
+                    {% endif %}
+                </div>
 
-            {% if messages %}
-                <h2 class="display-6 text-dark mb-3"> Historia rozmowy: </h2>
-
-                {% for message in messages %}
-                    {% if forloop.counter0 > 0 %}
-                         <div class="alert bg-{% if message.role == 'user'  %}secondary{% else %}info{% endif %}">
-                    <p>{% if message.role == 'user'  %}
-                        <strong>Ty:</strong>
-                        {% else %}
-                        <strong>ChatGPT:</strong>
-                        {% endif %}
-
-                        {{message.content }} </p>
+                <form id="chatForm" class="my-4" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" id="conversation_history" name="conversation_history" value="{{ form.conversation_history.value|default:'[]' }}">
+                    <div class="input-group">
+                        <textarea class="form-control" id="prompt" name="prompt" placeholder="Napisz wiadomość..." rows="2"></textarea>
+                        <button type="submit" class="btn btn-success" id="submitBtn">Wyślij</button>
                     </div>
-                 {% endif %}
-                {% endfor %}
-            {% endif %}
+                </form>
 
-              <form method="POST" class="my-4">
-                {% csrf_token %}
-                {{ form.conversation_history }}
-                {{ form.prompt }}
-                <button type="submit" class="btn btn-success w-100 my-3">Wyślij</button>
-            </form>
-
-<!--            {% if assistant_response %}-->
-<!--                <div class="alert alert-success">-->
-<!--                    <p>Chat odpowiedział:</p>-->
-<!--                    <p>{{ assistant_response }}</p>-->
-<!--                </div>-->
-<!--            {% endif %}-->
-<!--            {% if response %}-->
-<!--                <div class="alert alert-info">-->
-<!--                    <p>Dane debug:</p>-->
-<!--                    <p>{{ response }}</p>-->
-<!--                </div>-->
-<!--            {% endif %}-->
-        </div>
+                <!-- Spinner ładowania -->
+                <div class="text-center my-4 d-none" id="loadingSpinner">
+                    <button class="btn btn-warning" type="button" disabled>
+                      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      <span class="sr-only">Czekaj odpowiadam...</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-
+</div>
     <!-- JavaScript for submiting form -->
         <script src="{% static 'js/chat.js' %}"></script>
 
