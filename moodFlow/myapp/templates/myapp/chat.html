@@ -44,8 +44,9 @@
                 <form id="chatForm" class="my-4" method="POST">
                     {% csrf_token %}
                     <input type="hidden" id="conversation_history" name="conversation_history" value="{{ form.conversation_history.value|default:'[]' }}">
-                    <div class="input-group">
-                        <textarea class="form-control" id="prompt" name="prompt" placeholder="Napisz wiadomość..." rows="2"></textarea>
+                    <div>
+<!--                        <textarea class="form-control" id="prompt" name="prompt" placeholder="Napisz wiadomość..." rows="2"></textarea>-->
+                        {{ form.prompt }}
                         <button type="submit" class="btn btn-success" id="submitBtn">Wyślij</button>
                     </div>
                 </form>

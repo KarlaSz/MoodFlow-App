@@ -15,5 +15,8 @@ class TaskForm(forms.ModelForm):
         }
 
 class ChatForm(forms.Form):
-    prompt = forms.CharField(label="Prompt", widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Wpisz pytanie..."}))
+    prompt = forms.CharField(label="Prompt", widget=forms.TextInput(attrs={"class": "form-control",
+                                                                           "placeholder": "Wpisz pytanie...",
+                                                                           "id": "prompt",
+                                                                           "name": "prompt"}))
     conversation_history = forms.CharField(required=False, widget=forms.HiddenInput())
