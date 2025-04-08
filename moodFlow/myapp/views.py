@@ -7,8 +7,13 @@ from .forms import TaskForm
 from django.utils import timezone
 from openai import OpenAI
 import json
+import calendar
 
 from .forms import ChatForm
+
+year = 2025
+month = 4
+print(calendar.month(year, month))
 
 def home(request):
     """Strona główna - ogolna interakcja"""
@@ -32,7 +37,7 @@ def todo_list(request):
     status_filter = request.GET.get("status")  # np. ?status=pending
 
     if status_filter:
-        print("STATUS FILTER:", status_filter)  # 👈 zobaczysz w terminalu
+        # print("STATUS FILTER:", status_filter)  # zobaczysz w terminalu
         tasks = Task.objects.filter(status=status_filter).order_by("-created_at")
     else:
         tasks = Task.objects.all().order_by("-created_at")
@@ -57,6 +62,8 @@ def todo_list(request):
 def edit_task(request, task_id):
     """Edycja istniejącego zadania"""
     task = get_object_or_404(Task, id=task_id)
+
+
     if request.method == "POST":
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
@@ -68,7 +75,7 @@ def edit_task(request, task_id):
     else:
         form = TaskForm(instance=task)
 
-    return render(request, "myapp/edit_task.html", {"form": form, "task": task})
+    return render(request, "myapp/edit_task.html", {"form": form, "task": task, "task.updated_at": task.updated_at})
 
 
 @require_POST
@@ -150,7 +157,8 @@ def chat(request):
     messages = []
     api_key = get_api_key()
     error_message = None
-    model = "gpt-4.5-preview"
+    model = "gpt-4o"
+    # model = "gpt-3.5-turbo"
     assistant_response = None
     response = None
 

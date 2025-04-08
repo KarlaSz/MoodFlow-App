@@ -8,7 +8,15 @@
     <form method="POST" class="card p-4">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+        <br>
+        {% if task.updated_at %}
+            <p class="mt-3" style="font-size: 12px">Ostatnio zaktualizowano:  {{ task.updated_at }}</p>
+            {% else %}
+            <p class="mt-3" style="font-size: 12px">To zadanie nie było jeszcze aktualizowane</p>
+        {% endif %}
+
+
+        <button type="submit" class="btn btn-primary mb-1">Zapisz zmiany</button>
         <a href="{% url 'todo_list' %}" class="btn btn-secondary">Anuluj</a>
     </form>
 {% endblock %}

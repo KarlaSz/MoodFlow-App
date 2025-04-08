@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}life manager - Dziennik aktywności{% endblock %}
 
 {% block content %}
@@ -18,12 +18,11 @@
         </div>
 
         <div class="col-md-6">
-            <label for="id_url" class="form-label">Link</label>
-            {{ form.url }}
-            {% if form.url.errors %}
-                <div class="invalid-feedback d-block">{{ form.url.errors.0 }}</div>
-            {% endif %}
-        </div>
+                   <label for="task-date" class="form-label">Ustaw przypomnienie</label>
+                           <input type="date" class="form-control" id="task-date" name="task_date">
+                      </div>
+
+
 
         <div class="col-md-6">
             <label for="id_mood_choice" class="form-label">Nastrój</label>
@@ -41,6 +40,14 @@
             {% endif %}
         </div>
 
+        <div class="mb-3">
+            <label for="id_url" class="form-label">Link</label>
+            {{ form.url }}
+            {% if form.url.errors %}
+                <div class="invalid-feedback d-block">{{ form.url.errors.0 }}</div>
+            {% endif %}
+        </div>
+
         <div class="col-12">
             <label for="id_comment" class="form-label">Komentarz</label>
             {{ form.comment }}
@@ -50,7 +57,7 @@
         </div>
 
         <div class="col-12 text-end">
-            <button type="submit" class="btn btn-success"><i class="bi bi-plus-circle"></i> Dodaj zadanie</button>
+            <button id="form" type="submit" class="btn btn-success"><i class="bi bi-plus-circle"></i> Dodaj zadanie</button>
         </div>
     </form>
 
@@ -77,12 +84,16 @@
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <strong>{{ task.title }}</strong><br>
-                        {% if task.comment %}<p class="mb-1"><small>{{ task.comment }}</small></p>{% endif %}<br>
-    <!--                    <p class="mb-0">Nastrój: <strong>{{ task.get_mood_choice_display }}</strong></p>-->
-                        <span class="mb-0 badge bg-info me-2">Nastrój: {{ task.get_mood_choice_display }}</span><br>
-                        <span class="mb-0 badge {% if task.status == 'completed' %}bg-success{% elif task.status == 'pending' %}bg-secondary{% else %}bg-secondary{% endif %}">
+                        {% if task.comment %}<small><strong>Szczegóły:</strong> {{ task.comment }}</small>{% endif %}<br>
+
+                        <span class=" badge bg-info me-2">Nastrój: {{ task.get_mood_choice_display }}</span><br>
+                        <span class="mb-0 badge {% if task.status == 'completed' %}bg-success{% elif task.status == 'pending' %}bg-warning{% else %}bg-secondary{% endif %}">
                                  Status: {{ task.get_status_display }}
                             </span>
+                        <br>
+                        {% if task.url %}<a href="{{ task.url }}" target="_blank" class="badge bg-primary">Link</a>{% endif %}
+
+                        <p class="mt-2" style="font-size: 12px">Utworzone:  {{ task.created_at }}</p>
 
                     </div>
                     <div class="d-flex gap-2">
@@ -98,4 +109,7 @@
             {% endfor %}
         </ul>
     </div>
+
+    <!-- sutbmit enter btn-->
+    <script src="{% static 'js/todo.js' %}"></script>
 {% endblock %}
