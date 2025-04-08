@@ -102,7 +102,7 @@ def api_task_details(request, task_id):
 def get_api_key():
     """Pobiera klucz API z pliku openai_key.txt"""
     try:
-        with open('../openai_key.txt', 'r') as f:
+        with open('./openai_key.txt', 'r') as f:
             return f.read().strip()
     except FileNotFoundError:
         print("Błąd: Plik openai_key.txt nie został znaleziony.")
@@ -113,19 +113,30 @@ def get_api_key():
 
 
 def chat(request):
-    preprompt = """Jesteś asystentem mojej firmy webszyk. Masz za zadanie odpowiadac klientom na temat naszych produktow. Firma zajmuje sie:
-        1. tylko i wylacznie sprzedaz oprogramowania na win11, linux Debian 13
-        2. Tylko i wylacznie sprzedaz oprogramowania biurowego MS office 365
-
-        Nie prponuj innych produktow tylko nasze.
-
-
-        Tu jest pierwsze pytanie klienta:
-        """
+    # preprompt = """Jesteś asystentem mojej firmy Karo. Masz za zadanie odpowiadać klientom na temat naszych produktów.
+    #     FIRMA ZAJMUJE SIĘ:
+    #     1. Tylko i wyłącznie sprzedaż systemów: Windows 11, Linux Debian 13
+    #     2. Tylko i wyłącznie sprzedaż oprogramowania biurowego: MS Office 365
+    #     3. Niczym poza tym nie handlujemy i nie doradzamy
+    #
+    #     DORADZAJ klientowi zakup TYLKO naszych produktów!
+    #     NIE proponuj innych. Sprzedajemy tylko nasze.
+    #
+    #     WAŻNE:
+    #     1. Jak klient zapyta o produkt innym niż nasz (nawet kuchenkę mikrofalową), zaproponuj, że potrezbuje do tego system operacyjny, który sprzedajemy.
+    #     2. Zachwalaj nasze usługi!
+    #     3. Na dzień dobry przedstaw naszą oefrtę, niezależnie co chce klient.
+    #
+    #     CENNIK:
+    #     Windows 11 - cena 3000PLN
+    #     Linux Debian 13 - cena 5000PLN
+    #
+    #     Tu jest pierwsze pytanie klienta:
+    #     """
     messages = []
     api_key = get_api_key()
     error_message = None
-    model = "gpt-3.5-turbo"
+    model = "gpt-4.5-preview"
     assistant_response = None
     response = None
 
@@ -141,10 +152,10 @@ def chat(request):
             history_json = form.cleaned_data.get("conversation_history") or "[]"
             messages = json.loads(history_json)
             if messages == []:
-                messages.append({"role": "user", "content": preprompt})
+                messages.append({"role": "user", "content": user_prompt})
 
             client = OpenAI(api_key=api_key)
-            user_prompt = preprompt + user_prompt
+            # user_prompt = preprompt + user_prompt
             messages.append({"role": "user", "content": user_prompt})
             response = client.chat.completions.create(
                 model=model,
