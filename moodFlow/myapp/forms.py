@@ -16,7 +16,7 @@ class TaskForm(forms.ModelForm):
 
 class ChatForm(forms.Form):
     prompt = forms.CharField(label="Prompt", widget=forms.Textarea(attrs={"class": "form-control",
-                                                                           "placeholder": "Wpisz pytanie...",
+                                                                           "placeholder": "Napisz coś i rozpocznij rozmowę...",
                                                                            "id": "prompt",
                                                                           "rows":2,
                                                                     }))
