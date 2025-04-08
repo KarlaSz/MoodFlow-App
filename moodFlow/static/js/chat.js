@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Funkcja do dodawania wiadomości do chatu
         function addMessage(role, content) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `alert bg-${role === 'user' ? 'secondary' : 'info'}`;
+            messageDiv.className = `alert bg-${role === 'user' ? 'success' : 'dark'}`;
 
             const paragraph = document.createElement('p');
             const strong = document.createElement('strong');
@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
             chatMessages.appendChild(messageDiv);
 
             // Przewijanie do najnowszej wiadomości
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+
         }
 
         // Obsługa Enter w polu tekstowym

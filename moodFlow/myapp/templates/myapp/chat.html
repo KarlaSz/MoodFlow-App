@@ -15,7 +15,7 @@
 
                 <div id="chat-container">
                     {% if messages %}
-                        <h2 class="display-6 text-dark mb-3">Historia rozmowy:</h2>
+                        <h2 class="display-6 text-dark mb-3">Historia:</h2>
                         <div id="chat-messages">
                         {% for message in messages %}
                             {% if forloop.counter0 > 0 %}
@@ -44,8 +44,7 @@
                 <form id="chatForm" class="my-4" method="POST">
                     {% csrf_token %}
                     <input type="hidden" id="conversation_history" name="conversation_history" value="{{ form.conversation_history.value|default:'[]' }}">
-                    <div>
-<!--                        <textarea class="form-control" id="prompt" name="prompt" placeholder="Napisz wiadomość..." rows="2"></textarea>-->
+                    <div class="input-group">
                         {{ form.prompt }}
                         <button type="submit" class="btn btn-success" id="submitBtn">Wyślij</button>
                     </div>
