@@ -3,20 +3,67 @@
 {% block title %}Edytuj zadanie{% endblock %}
 
 {% block content %}
-    <h1 class="my-4">Edytuj zadanie</h1>
+    <h1 class="display-4 text-white mb-3">Edytuj zadanie</h1>
 
-    <form method="POST" class="card p-4">
+    <form method="POST" class="row p-4">
         {% csrf_token %}
-        {{ form.as_p }}
+<!--        {{ form.as_p }}-->
+        <div class="col-md-6">
+            <label for="{{ form.title.id }}" class="form-label">Tytuł</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+                   <label for="task-date" class="form-label">Ustaw przypomnienie</label>
+                           <input type="date" class="form-control" id="task-date" name="task_date">
+                      </div>
+
+
+
+        <div class="col-md-6">
+            <label for="id_mood_choice" class="form-label">Nastrój</label>
+            {{ form.mood_choice }}
+            {% if form.mood_choice.errors %}
+                <div class="invalid-feedback d-block">{{ form.mood_choice.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <label for="id_status" class="form-label">Status</label>
+            {{ form.status }}
+            {% if form.status.errors %}
+                <div class="invalid-feedback d-block">{{ form.status.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_url" class="form-label">Link</label>
+            {{ form.url }}
+            {% if form.url.errors %}
+                <div class="invalid-feedback d-block">{{ form.url.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-12">
+            <label for="id_comment" class="form-label">Komentarz</label>
+            {{ form.comment }}
+            {% if form.comment.errors %}
+                <div class="invalid-feedback d-block">{{ form.comment.errors.0 }}</div>
+            {% endif %}
+        </div>
+
         <br>
         {% if task.updated_at %}
-            <p class="mt-3" style="font-size: 12px">Ostatnio zaktualizowano:  {{ task.updated_at }}</p>
+            <p class="mt-3" style="font-size: 15px">Ostatnio zaktualizowano:  {{ task.updated_at }}</p>
             {% else %}
-            <p class="mt-3" style="font-size: 12px">To zadanie nie było jeszcze aktualizowane</p>
+            <p class="mt-3" style="font-size: 15px">To zadanie nie było jeszcze aktualizowane</p>
         {% endif %}
 
 
-        <button type="submit" class="btn btn-primary mb-1">Zapisz zmiany</button>
-        <a href="{% url 'todo_list' %}" class="btn btn-secondary">Anuluj</a>
+        <button type="submit" class="btn btn-primary mb-1 py-3">Zapisz zmiany</button>
+        <a href="{% url 'todo_list' %}" class="btn btn-secondary py-3">Anuluj</a>
     </form>
 {% endblock %}
