@@ -7,13 +7,9 @@ from .forms import TaskForm
 from django.utils import timezone
 from openai import OpenAI
 import json
-import calendar
-
 from .forms import ChatForm
 
-year = 2025
-month = 4
-print(calendar.month(year, month))
+
 
 def home(request):
     """Strona główna - ogolna interakcja"""
@@ -34,13 +30,13 @@ def news(request):
 def todo_list(request):
     """dziennik  - lista zadań + dodawanie nowych"""
 
-    status_filter = request.GET.get("status")  # np. ?status=pending
+    status_filter = request.GET.get("status")  # np. ?status=pending queryParameter
 
     if status_filter:
         # print("STATUS FILTER:", status_filter)  # zobaczysz w terminalu
-        tasks = Task.objects.filter(status=status_filter).order_by("-created_at")
+        tasks = Task.objects.filter(status=status_filter).order_by("created_at")
     else:
-        tasks = Task.objects.all().order_by("-created_at")
+        tasks = Task.objects.all().order_by("created_at")
 
     task_count = tasks.count()
 
@@ -53,11 +49,20 @@ def todo_list(request):
     else:
         form = TaskForm()
 
+    STATUS_LABELS = {
+        'pending': '💭 Zaplanowane',
+        'in_progress': '⏳ W trakcie',
+        'completed': '✅ Ukończone',
+    }
+
+
     return render(request, "myapp/todo.html",
                   {"tasks": tasks,
                    "form": form,
                    'task_count': task_count,
-                   "status_filter": status_filter,})
+                   "status_filter": status_filter,
+                   "filter_label": STATUS_LABELS.get(status_filter),
+                   })
 
 def edit_task(request, task_id):
     """Edycja istniejącego zadania"""
@@ -118,6 +123,18 @@ def api_task_details(request, task_id):
         "created_at": task.created_at,
     }
     return JsonResponse(task_data)
+
+def toggle_done(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+    # Przełączanie między "completed" i "pending"
+    if task.status == 'completed':
+        task.status = 'pending'
+    else:
+        task.status = 'completed'
+
+    task.save()
+    return redirect('todo_list')  # wraca na główną listę
 
 
 def get_api_key():

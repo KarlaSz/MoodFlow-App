@@ -13,7 +13,7 @@ MOOD_CHOICES = [
 ]
 
 IDEA_STATUS = [
-    ("pending", "💭 Oczekujące"),
+    ("pending", "💡 Oczekujące"),
     ("in_progress", "⏳ W trakcie"),
     ("completed", "✅ Zakończone"),
 ]
