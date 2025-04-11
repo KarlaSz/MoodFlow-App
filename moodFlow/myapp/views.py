@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from django.contrib import messages
+# from django.contrib import messages
 from django.views.decorators.http import require_POST
 from .models import Task
 from .forms import TaskForm
@@ -8,13 +8,36 @@ from django.utils import timezone
 from openai import OpenAI
 import json
 from .forms import ChatForm
-
+import requests #for API wather conection
 
 
 def home(request):
     """Strona główna - ogolna interakcja"""
-
+    context = {
+        # Możesz dodać jakieś zmienne kontekstowe, np. początkowe miasto
+        'initial_city': request.GET.get('city', 'Kraków')
+    }
     return render(request, "myapp/home.html")
+
+def weather_api(request):
+    CITIES = ['Szczecin', 'Wrocław']
+    url = 'https://danepubliczne.imgw.pl/api/data/synop'
+    try:
+        response = requests.get(url)
+        weather_data = []
+        for row in response.json():
+            if row['stacja'] in CITIES:
+                weather_data.append({
+                    'city': row['stacja'],
+                    'hour': row['godzina_pomiaru'],
+                    'temperature': row['temperatura'],
+                    'humidity': row.get('wilgotnosc_wzgledna'),
+                    'wind_speed': row.get('predkosc_wiatru'),
+                    'visibility': row.get('cisnienie')  # IMGW nie ma widoczności, ale można zastąpić np. ciśnieniem
+                })
+        return JsonResponse({'weather': weather_data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 def finance(request):
     """Strona finansowa"""

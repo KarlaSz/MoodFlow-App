@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import home, finance, news, chat, todo_list, edit_task, delete_task, toggle_done, api_list_tasks, api_task_details
+from .views import home, finance, news, chat, todo_list, edit_task, delete_task, toggle_done, api_list_tasks, api_task_details,weather_api
 
 urlpatterns = [
     # URL-e dla głównych widoków
     path('', home, name='home'),  # Strona główna - lista zadań
+    path('weather/', weather_api, name='weather_api'), #http://localhost:8000/?city=KRAKÓW
     path('dziennik', todo_list, name='todo_list'),  # dziennik aktywnosci - lista zadań
     path('finanse', finance, name='finance'), #finanse
     path('wiadomosci', news, name='news'), #finanse
