@@ -36,30 +36,31 @@
 
             <!-- Menu nawigacyjne -->
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul class="navbar-nav me-auto"> <!-- "me-auto" sprawia, że menu jest wyrównane do lewej -->
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link active" aria-current="page" href="{% url 'chat' %}">ChatGPT</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'news' %}">Świat zewnętrzny</a>
-                    </li>
-<!--                    <li class="nav-item">-->
-<!--                        <a class="nav-link" href="#">Praca</a>-->
-<!--                    </li>-->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            Life manager
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="{% url 'todo_list' %}">Dziennik aktywności</a></li>
-                            <li><a class="dropdown-item" href="{% url 'finance' %}">Finanse</a></li>
-                        </ul>
-                    </li>
-                </ul>
+              <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active" aria-current="page{% endif %}" href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'chat' %}active" aria-current="page{% endif %}" href="{% url 'chat' %}">ChatGPT</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'news' %}active" aria-current="page{% endif %}" href="{% url 'news' %}">Świat zewnętrzny</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Life manager
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <li>
+                            <a class="dropdown-item {% if request.resolver_match.url_name == 'todo_list' %}active" aria-current="page{% endif %}" href="{% url 'todo_list' %}">Dziennik aktywności</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.resolver_match.url_name == 'finance' %}active" aria-current="page{% endif %}" href="{% url 'finance' %}">Finanse</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
 
                  <!-- Ikony powiadomień i ustawień po prawej stronie -->
                 <ul class="navbar-nav ms-auto"> <!-- "ms-auto" wyrównuje elementy do prawej -->
