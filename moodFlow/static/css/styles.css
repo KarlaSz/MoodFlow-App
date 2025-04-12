@@ -23,7 +23,7 @@
 }
 
 
-    /* Animacja dla spinnera */
+    /* Animacja dla spinnera chata*/
     @keyframes pulse {
         0% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.1); opacity: 0.8; }
@@ -33,3 +33,86 @@
     #loadingSpinner .spinner-border {
         animation: pulse 1.5s infinite ease-in-out, spinner-border 0.75s linear infinite;
     }
+
+.weather-data-loading {
+    visibility: hidden; /* Ukrywa element, ale zachowuje jego miejsce */
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out; /* Płynne pojawienie */
+}
+
+.weather-data-loaded {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* -- Animacje ikon pogody -- */
+
+/* Słońce - np. lekkie obracanie lub pulsowanie */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+.weather-animate-sun i {
+    animation: spin 20s linear infinite; /* Wolny obrót */
+    color: #ffc107; /* Żółty */
+}
+.weather-animate-sun-cloud i.bi-cloud-sun {
+     /* Można animować tylko część ikony lub całą lekko */
+     animation: pulse 3s ease-in-out infinite;
+     color: #ffc107; /* Lub mieszany kolor */
+}
+
+/* Deszcz - np. animacja kropli (trudniejsze w czystym CSS na ikonie fontowej) */
+/* Prostsza opcja: lekkie kołysanie */
+ @keyframes sway {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+}
+.weather-animate-rain i {
+    animation: sway 1.5s ease-in-out infinite;
+    color: #6c757d; /* Szary/niebieski */
+}
+
+/* Śnieg - np. lekkie drżenie */
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  /* ... więcej kroków dla bardziej złożonego drżenia ... */
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+ .weather-animate-snow i, .weather-animate-cold i {
+    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both infinite;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    color: #0dcaf0; /* Jasnoniebieski */
+ }
+
+ /* Wiatr - np. szybkie przesuwanie w bok */
+ @keyframes wind-blow {
+     0%, 100% { transform: translateX(0); }
+     50% { transform: translateX(5px); }
+ }
+ .weather-animate-wind i {
+     animation: wind-blow 0.5s ease-in-out infinite;
+     color: #adb5bd; /* Jasnoszary */
+ }
+
+ /* Chmura - np. lekkie unoszenie */
+ @keyframes float {
+     0%, 100% { transform: translateY(0); }
+     50% { transform: translateY(-3px); }
+ }
+ .weather-animate-cloud i {
+     animation: float 4s ease-in-out infinite;
+     color: #adb5bd; /* Jasnoszary */
+ }
+
+/* Upewnij się, że animacje nie psują wyglądu */
+[class^="bi-"].weather-animate- {
+    display: inline-block; /* Potrzebne dla transformacji */
+}

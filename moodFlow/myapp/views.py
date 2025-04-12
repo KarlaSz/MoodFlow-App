@@ -41,7 +41,8 @@ def weather_api(request):
                         'temperature': row.get('temperatura', '?'),
                         'humidity': row.get('wilgotnosc_wzgledna', '?'),
                         'wind_speed': row.get('predkosc_wiatru', '?'),
-                        'pressure': row.get('cisnienie', '?')
+                        'pressure': row.get('cisnienie', '?'),
+                        'precipitation_sum': float(row.get('suma_opadu', 0.0) or 0.0)
                     }
                     found = True # Znaleziono miasto
                     break # Można przerwać pętlę po znalezieniu
