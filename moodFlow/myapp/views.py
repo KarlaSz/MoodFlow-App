@@ -13,31 +13,72 @@ import requests #for API wather conection
 
 def home(request):
     """Strona główna - ogolna interakcja"""
-    context = {
-        # Możesz dodać jakieś zmienne kontekstowe, np. początkowe miasto
-        'initial_city': request.GET.get('city', 'Kraków')
-    }
     return render(request, "myapp/home.html")
 
 def weather_api(request):
-    CITIES = ['Szczecin', 'Wrocław']
     url = 'https://danepubliczne.imgw.pl/api/data/synop'
     try:
         response = requests.get(url)
+        response.raise_for_status() # Dodaj sprawdzanie statusu HTTP
         weather_data = []
-        for row in response.json():
-            if row['stacja'] in CITIES:
-                weather_data.append({
-                    'city': row['stacja'],
-                    'hour': row['godzina_pomiaru'],
-                    'temperature': row['temperatura'],
-                    'humidity': row.get('wilgotnosc_wzgledna'),
-                    'wind_speed': row.get('predkosc_wiatru'),
-                    'visibility': row.get('cisnienie')  # IMGW nie ma widoczności, ale można zastąpić np. ciśnieniem
-                })
-        return JsonResponse({'weather': weather_data})
+        data = response.json()
+
+        if request.GET.get('list_cities') == 'true':
+            cities = [{'city': row['stacja']} for row in data]
+             # Sortowanie miast alfabetycznie po stronie serwera
+            cities.sort(key=lambda x: x['city'])
+            return JsonResponse({'cities': cities})
+
+        city = request.GET.get('city')
+        if city:
+            found = False # Flaga do sprawdzenia czy znaleziono miasto
+            for row in data:
+                # Porównanie bez uwzględniania wielkości liter jest dobre
+                if row['stacja'].upper() == city.upper():
+                    weather_data = {
+                        'city': row['stacja'],
+                        'hour': row.get('godzina_pomiaru', '?'), # Użyj .get() dla bezpieczeństwa
+                        'temperature': row.get('temperatura', '?'),
+                        'humidity': row.get('wilgotnosc_wzgledna', '?'),
+                        'wind_speed': row.get('predkosc_wiatru', '?'),
+                        'pressure': row.get('cisnienie', '?')
+                    }
+                    found = True # Znaleziono miasto
+                    break # Można przerwać pętlę po znalezieniu
+            if found:
+                return JsonResponse({'weather': weather_data})
+            else:
+                # Miasto nie znalezione - zwróć błąd 404
+                return JsonResponse({'error': f'Miasto "{city}" nie zostało znalezione'}, status=404)
+
+        # Domyślne zachowanie (jeśli nie ma ?list_cities ani ?city)
+        # Można by zwrócić błąd lub dane dla domyślnego miasta,
+        # ale obecna implementacja zwracająca wszystko też jest akceptowalna,
+        # chociaż frontend nie powinien wywoływać API w ten sposób.
+        # W tym przykładzie zostawiamy jak jest, ale dodajemy .get() dla bezpieczeństwa
+        for row in data:
+             weather_data.append({
+                'city': row['stacja'],
+                'hour': row.get('godzina_pomiaru', '?'),
+                'temperature': row.get('temperatura', '?'),
+                'humidity': row.get('wilgotnosc_wzgledna', '?'),
+                'wind_speed': row.get('predkosc_wiatru', '?'),
+                'pressure': row.get('cisnienie', '?')
+             })
+        return JsonResponse({'weather': weather_data}) # Zwraca listę, a nie pojedynczy obiekt 'weather'
+
+    except requests.exceptions.RequestException as e:
+        # Lepsze logowanie błędów połączenia
+        print(f"Błąd połączenia z API IMGW: {e}")
+        return JsonResponse({'error': 'Błąd połączenia z serwisem pogodowym.'}, status=502) # Bad Gateway
+    except json.JSONDecodeError as e:
+         # Błąd parsowania JSON
+        print(f"Błąd dekodowania JSON z API IMGW: {e}")
+        return JsonResponse({'error': 'Nieprawidłowa odpowiedź z serwisu pogodowego.'}, status=502)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        # Ogólny błąd serwera
+        print(f"Nieoczekiwany błąd w weather_api: {e}") # Logowanie błędu na serwerze
+        return JsonResponse({'error': f'Wystąpił wewnętrzny błąd serwera: {str(e)}'}, status=500)
 
 def finance(request):
     """Strona finansowa"""

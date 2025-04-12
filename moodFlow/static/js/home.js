@@ -1,131 +1,231 @@
-document.addEventListener('DOMContentLoaded', function () {
-    console.log("🟢 DOM załadowany");
+document.addEventListener('DOMContentLoaded', () => {
+    const citySelector = document.getElementById('city-selector');
+    const temperatureElement = document.getElementById('temperature');
+    const descriptionElement = document.getElementById('weather-description');
+    const locationElement = document.getElementById('weather-location');
+    const updatedElement = document.getElementById('weather-updated');
+    const humidityElement = document.getElementById('humidity');
+    const windSpeedElement = document.getElementById('wind_speed');
+    const pressureElement = document.getElementById('pressure');
+    const refreshButton = document.getElementById('refresh-weather');
+    const lastUpdateElement = document.getElementById('last-update'); // Dodane dla czasu aktualizacji
+    const weatherIconElement = document.getElementById('weather-icon'); // Dla ikony
 
-    const today = new Date();
-    document.getElementById('current-date').textContent = today.toLocaleDateString('pl-PL', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    const weatherApiUrl = '/weather_api'; // Upewnij się, że URL jest poprawny
+
+    // --- 1. Funkcja do aktualizacji UI danymi pogodowymi ---
+    function updateWeatherUI(weatherData) {
+        if (!weatherData) {
+            console.error("Brak danych pogodowych do wyświetlenia");
+            // Można tu wyświetlić komunikat o błędzie w UI
+            locationElement.textContent = 'Brak danych';
+            temperatureElement.textContent = '-°C';
+            descriptionElement.textContent = '-';
+            humidityElement.textContent = '- %';
+            windSpeedElement.textContent = '- km/h';
+            pressureElement.textContent = '- hPa';
+            updatedElement.textContent = '';
+            lastUpdateElement.textContent = `Ostatnia aktualizacja: ${new Date().toLocaleTimeString()}`;
+            return;
+        }
+
+        console.log("Aktualizowanie UI dla:", weatherData); // Debug
+
+        locationElement.textContent = `Miasto: ${weatherData.city || 'Nieznane miasto'}`;
+        temperatureElement.textContent = `${weatherData.temperature || '?'}°C`;
+        // Prosta logika opisu/ikony (można rozbudować)
+        descriptionElement.textContent = determineWeatherDescription(weatherData.temperature);
+        updateWeatherIcon(weatherData.temperature); // Funkcja do aktualizacji ikony
+
+        humidityElement.textContent = `${weatherData.humidity || '?'} %`;
+        // Sprawdź jednostkę wiatru zwracaną przez API (zakładam km/h, może być m/s)
+        windSpeedElement.textContent = `${weatherData.wind_speed || '?'} km/h`;
+        pressureElement.textContent = `${weatherData.pressure || '?'} hPa`;
+        updatedElement.textContent = `Pomiar o ${weatherData.hour || '?'} godzinie`;
+        lastUpdateElement.textContent = `Ostatnia aktualizacja: ${new Date().toLocaleTimeString()}`;
+    }
+
+     // --- Prosta funkcja do określania opisu pogody ---
+     function determineWeatherDescription(temp) {
+        if (temp === null || temp === undefined || temp === '?') return 'Brak danych';
+        const tempNum = parseFloat(temp);
+        if (isNaN(tempNum)) return 'Błędne dane';
+        if (tempNum > 25) return 'Gorąco';
+        if (tempNum > 15) return 'Ciepło';
+        if (tempNum > 5) return 'Chłodno';
+        return 'Zimno';
+    }
+
+    // --- Prosta funkcja do zmiany ikony ---
+    function updateWeatherIcon(temp) {
+        let iconClass = 'bi-question-circle'; // Domyślna ikona
+        if (temp !== null && temp !== undefined && temp !== '?') {
+            const tempNum = parseFloat(temp);
+             if (!isNaN(tempNum)) {
+                if (tempNum > 20) iconClass = 'bi-sun text-warning'; // Słonecznie/ciepło
+                else if (tempNum > 5) iconClass = 'bi-cloud-sun'; // Częściowe zachmurzenie/chłodniej
+                else iconClass = 'bi-snow text-info'; // Zimno/śnieg
+             }
+        }
+        weatherIconElement.innerHTML = `<i class="bi ${iconClass}" style="font-size: 3rem;"></i>`;
+    }
+
+
+    // --- 2. Funkcja do pobierania danych dla konkretnego miasta ---
+    async function fetchWeatherData(cityName) {
+    console.log(`Pobieranie pogody dla: ${cityName}`);
+    const url = `${weatherApiUrl}?city=${encodeURIComponent(cityName)}`;
+    console.log(`Wysyłanie zapytania do: ${url}`);
+    try {
+        const response = await fetch(url);
+        console.log(`Odpowiedź fetch dla ${cityName}:`, response.status, response.statusText);
+
+        // --- POCZĄTEK BRAKUJĄCEGO KODU ---
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.error(`Miasto ${cityName} nie znalezione (status 404).`);
+                const errorData = await response.json().catch(() => ({ error: `Nie znaleziono miasta: ${cityName}` })); // Spróbuj odczytać JSON z błędem
+                updateWeatherUI(null);
+                locationElement.textContent = errorData.error || `Nie znaleziono: ${cityName}`;
+            } else {
+                // Inny błąd HTTP
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return null; // Zwróć null w przypadku błędu 404 lub innego błędu HTTP
+        }
+
+        // Jeśli odpowiedź jest OK (status 200)
+        const data = await response.json();
+        console.log(`Dane JSON dla ${cityName}:`, data);
+
+        if (data.error) {
+            // Błąd zwrócony przez API w JSON (mimo statusu 200, np. wewnętrzny błąd API)
+            console.error("Błąd zwrócony przez API:", data.error);
+            updateWeatherUI(null);
+            locationElement.textContent = `Błąd API: ${data.error}`;
+            return null;
+        }
+
+        // Mamy poprawne dane pogodowe
+        updateWeatherUI(data.weather);
+        return data.weather; // Zwróć pobrane dane
+        // --- KONIEC BRAKUJĄCEGO KODU ---
+
+    } catch (error) {
+        // Błędy sieciowe, błędy parsowania JSON itp.
+        console.error(`Błąd podczas fetchWeatherData dla ${cityName}:`, error);
+        updateWeatherUI(null); // Wyczyść UI w razie błędu
+        locationElement.textContent = 'Błąd pobierania';
+        return null;
+    }
+}
+
+    // --- 3. Funkcja do pobierania listy miast i wypełniania selektora ---
+    async function populateCitySelector(defaultCity = 'Wrocław') {
+    console.log("Rozpoczynam populateCitySelector...");
+    try {
+        const response = await fetch(`${weatherApiUrl}?list_cities=true`);
+        console.log("Odpowiedź fetch dla listy miast:", response.status, response.statusText);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Otrzymane dane miast (JSON):", data);
+
+        // --- POCZĄTEK BRAKUJĄCEGO KODU ---
+        if (data.cities && Array.isArray(data.cities)) {
+            citySelector.innerHTML = '<option value="">Wybierz miasto...</option>'; // Wyczyść i dodaj placeholder
+            let foundDefault = false;
+            data.cities.forEach(cityData => {
+                const option = document.createElement('option');
+                option.value = cityData.city; // WAŻNE: ustawienie wartości
+                option.textContent = cityData.city; // Tekst widoczny dla użytkownika
+                if (cityData.city.toUpperCase() === defaultCity.toUpperCase()) { // Porównanie bez wielkości liter
+                    option.selected = true; // Zaznacz domyślne miasto
+                    foundDefault = true;
+                }
+                citySelector.appendChild(option);
+            });
+
+            // Jeśli domyślne miasto nie zostało znalezione na liście, upewnij się, że wybrane jest "Wybierz miasto..."
+            if (!foundDefault) {
+                citySelector.value = "";
+                 console.warn(`Domyślne miasto "${defaultCity}" nie znalezione na liście z API.`);
+            }
+             console.log("Selektor miast wypełniony.");
+
+        } else {
+            console.error("Otrzymano nieprawidłowy format listy miast", data);
+            citySelector.innerHTML = '<option value="">Błąd formatu danych</option>';
+        }
+        // --- KONIEC BRAKUJĄCEGO KODU ---
+
+        console.log("Zakończono sukcesem populateCitySelector.");
+
+    } catch (error) {
+        console.error('Błąd podczas populateCitySelector:', error);
+        citySelector.innerHTML = '<option value="">Błąd ładowania miast</option>';
+        console.error("Zakończono populateCitySelector z BŁĘDEM.");
+    }
+}
+
+    // --- 4. Inicjalizacja ---
+    async function initializeWeatherWidget() {
+    console.log("--- Rozpoczynam initializeWeatherWidget ---");
+    const defaultCity = 'Wrocław';
+
+    // 1. Najpierw pobierz i wypełnij listę miast
+    await populateCitySelector(defaultCity);
+    console.log("initializeWeatherWidget: Po populateCitySelector.");
+
+    // 2. Sprawdź, co jest wybrane w selektorze
+    const selectedCity = citySelector.value; // Pobierz aktualną wartość z selektora
+    console.log(`initializeWeatherWidget: Miasto wybrane w selektorze: ${selectedCity || 'BRAK (pusty string)'}`);
+
+    // 3. Pobierz pogodę tylko jeśli coś jest wybrane
+    if (selectedCity) {
+         console.log(`initializeWeatherWidget: Pobieranie pogody dla "${selectedCity}"`);
+         await fetchWeatherData(selectedCity);
+    } else {
+        // To się stanie, jeśli populateCitySelector zawiedzie lub nie znajdzie domyślnego miasta
+        console.warn("initializeWeatherWidget: Brak wybranego miasta, nie pobieram pogody początkowej.");
+         updateWeatherUI(null); // Pokaż puste dane
+         locationElement.textContent = 'Wybierz miasto';
+    }
+     console.log("--- Zakończono initializeWeatherWidget ---");
+}
+
+    // --- 5. Event Listeners ---
+    citySelector.addEventListener('change', () => {
+        const selectedCity = citySelector.value;
+        if (selectedCity) {
+            fetchWeatherData(selectedCity);
+        } else {
+             // Jeśli wybrano "Wybierz miasto...", wyczyść dane
+             updateWeatherUI(null);
+             locationElement.textContent = 'Wybierz miasto';
+        }
     });
 
-    // Debugowanie: Sprawdźmy czy wszystkie elementy są znajdowane
-    console.log("citySelector:", document.getElementById('city-selector'));
-    console.log("refreshBtn:", document.getElementById('refresh-weather'));
-    console.log("lastUpdateSpan:", document.querySelector('.mt-3.d-flex.justify-content-between.align-items-center.small.text-white-50 span'));
-
-    // Pobierz selector miasta i dodaj obsługę zmiany
-    const citySelector = document.getElementById('city-selector');
-    const refreshBtn = document.getElementById('refresh-weather');
-    // Bezpośrednie odniesienie do elementu z datą aktualizacji
-    const lastUpdateSpan = document.querySelector('.mt-3.d-flex.justify-content-between.align-items-center.small.text-white-50 span');
-
-    // Ustaw początkowe miasto z URL lub domyślne
-    const urlParams = new URLSearchParams(window.location.search);
-    const cityParam = urlParams.get('city') || 'KRAKÓW';
-    const city = cityParam.toUpperCase();
-
-    console.log("Wybrane miasto:", city);
-
-    // Ustaw wybrane miasto w selektorze zgodnie z parametrem URL
-    if (citySelector) {
-        for (let i = 0; i < citySelector.options.length; i++) {
-            if (citySelector.options[i].value === city) {
-                citySelector.selectedIndex = i;
-                break;
-            }
+    refreshButton.addEventListener('click', () => {
+        const selectedCity = citySelector.value;
+        if (selectedCity) {
+            fetchWeatherData(selectedCity);
+        } else {
+            alert("Wybierz miasto, aby odświeżyć pogodę.");
         }
+    });
+
+     // --- Ustawienie aktualnej daty ---
+    const currentDateElement = document.getElementById('current-date');
+    if (currentDateElement) {
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        currentDateElement.textContent = today.toLocaleDateString('pl-PL', options);
     }
 
-    function updateWeatherDisplay(data) {
-        console.log("✅ Dane znalezione dla miasta:", data.stacja);
-        console.log("Pełne dane pogodowe:", data);
 
-        // Sprawdzamy klucze dostępne w danych - możliwe że API zwraca inne nazwy pól
-        // Używamy try/catch aby uniknąć błędów jeśli dane mają inną strukturę
-        try {
-            document.getElementById('temperature').textContent = `${data.temperatura || '?'}°C`;
-            document.getElementById('weather-description').textContent = 'Dane IMGW';
+    // --- Start ---
+    initializeWeatherWidget();
 
-            // Sprawdzamy różne możliwe nazwy pól dla wilgotności
-            const humidity = data.wilgotnosc_wzgledna || data.wilgotnosc || '?';
-            document.getElementById('humidity').textContent = `${humidity}%`;
-
-            // Sprawdzamy różne możliwe nazwy pól dla prędkości wiatru
-            const wind = data.predkosc_wiatru || data.wiatr || '?';
-            document.getElementById('wind-speed').textContent = `${wind} km/h`;
-
-            document.getElementById('visibility').textContent = '–';
-            document.getElementById('weather-location').textContent = `Miasto: ${data.stacja}`;
-
-            // Aktualizacja czasu pobrania danych
-            const now = new Date();
-            if (lastUpdateSpan) {
-                lastUpdateSpan.textContent = `Ostatnia aktualizacja: ${now.toLocaleTimeString('pl-PL')}`;
-            }
-        } catch (e) {
-            console.error("Błąd podczas aktualizacji interfejsu:", e);
-        }
-    }
-
-    function fetchWeather() {
-        console.log("🔄 Pobieranie danych pogodowych…");
-
-        fetch('https://danepubliczne.imgw.pl/api/data/synop')
-            .then(response => {
-                console.log("🟡 Odpowiedź z serwera IMGW:", response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log("Otrzymane dane z API:", data);
-
-                // Najpierw sprawdzamy strukturę danych
-                if (!Array.isArray(data)) {
-                    console.error("Dane z API nie są tablicą!");
-                    return;
-                }
-
-                // Szukamy dokładnego dopasowania lub częściowego
-                let found = data.find(entry => entry.stacja && entry.stacja.toUpperCase() === city);
-
-                // Jeśli nie znaleziono dokładnego dopasowania, szukamy częściowego
-                if (!found) {
-                    found = data.find(entry => entry.stacja && entry.stacja.toUpperCase().includes(city));
-                }
-
-                if (found) {
-                    updateWeatherDisplay(found);
-                } else {
-                    alert(`❌ Brak danych pogodowych dla miasta: ${city}`);
-                    console.warn("Nie znaleziono miasta:", city);
-                }
-            })
-            .catch(error => {
-                console.error('❌ Błąd przy fetchu:', error);
-                alert('Nie udało się pobrać danych pogodowych.');
-            });
-    }
-
-    // Obsługa przycisku odświeżania
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', function () {
-            console.log("🧊 Kliknięto: Odśwież pogodę");
-            fetchWeather();
-        });
-    }
-
-    // Obsługa zmiany miasta - dodajemy brakującą funkcjonalność!
-    if (citySelector) {
-        citySelector.addEventListener('change', function() {
-            const selectedCity = citySelector.value;
-            console.log("Wybrano nowe miasto:", selectedCity);
-
-            // Aktualizuj URL z nowym parametrem miasta
-            const newUrl = new URL(window.location.href);
-            newUrl.searchParams.set('city', selectedCity);
-            window.location.href = newUrl.toString();
-        });
-    } else {
-        console.error("Nie znaleziono selektora miasta!");
-    }
-
-    // Automatyczne ładowanie przy starcie
-    fetchWeather();
 });

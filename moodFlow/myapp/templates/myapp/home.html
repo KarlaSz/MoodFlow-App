@@ -14,75 +14,74 @@
     </div>
 
     <!-- Widget pogodowy -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card bg-dark text-white">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-cloud-sun"></i> Pogoda</h5>
-                    <span id="current-date"></span>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 text-center">
-                            <div id="weather-icon" class="mb-2">
-                                <i class="bi bi-sun text-warning" style="font-size: 3rem;"></i>
-                            </div>
-                            <h3 id="temperature">22°C</h3>
-                            <p id="weather-description">Słonecznie</p>
-                            <p id="weather-location" class="mb-0"></p>
-                            <p id="weather-updated" class="mb-0 small text-muted"></p>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-dark text-white">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-cloud-sun"></i> Pogoda</h5>
+                <span id="current-date"></span> <!-- Data będzie wstawiona przez JS -->
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div id="weather-icon" class="mb-2">
+                            <!-- Ikona zostanie dynamicznie wstawiona przez JS, można dać placeholder ładowania -->
+                            <i class="bi bi-hourglass-split text-secondary" style="font-size: 3rem;"></i>
                         </div>
-                        <div class="col-md-8">
-                            <div class="row">
-                                <div class="col-6 col-md-4 mb-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-droplet me-2"></i>
-                                        <div>
-                                            <small>Wilgotność</small>
-                                            <p class="mb-0" id="humidity">45%</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-4 mb-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-wind me-2"></i>
-                                        <div>
-                                            <small>Wiatr</small>
-                                            <p class="mb-0" id="wind-speed">12 km/h</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-4 mb-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-eye me-2"></i>
-                                        <div>
-                                            <small>Ciśnienie</small>
-                                            <p class="mb-0" id="visibility">10 km</p>
-                                        </div>
+                        <h3 id="temperature">-°C</h3>
+                        <p id="weather-description">Ładowanie...</p>
+                        <p id="weather-location" class="mb-0"></p>
+                        <p id="weather-updated" class="mb-0 small text-muted"></p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-6 col-md-4 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-droplet me-2"></i>
+                                    <div>
+                                        <small>Wilgotność</small>
+                                        <p class="mb-0" id="humidity">- %</p>
                                     </div>
                                 </div>
                             </div>
-                            <div class="text-end">
-                                <button class="btn btn-sm btn-outline-light" id="refresh-weather" >
-                                    <i class="bi bi-arrow-clockwise" ></i> Odśwież
-                                </button>
+                            <div class="col-6 col-md-4 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-wind me-2"></i>
+                                    <div>
+                                        <small>Wiatr</small>
+                                        <p class="mb-0" id="wind_speed">- km/h</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mt-3 d-flex justify-content-between align-items-center small text-white-50">
-                                <select id="city-selector" class="form-select form-select-sm w-auto d-inline">
-                                    <option value="KRAKÓW">Kraków</option>
-                                    <option value="WARSZAWA">Warszawa</option>
-                                    <option value="SZCZECIN">Szczecin</option>
-                                    <option value="GDAŃSK">Gdańsk</option>
-                                     <option value="WROCŁAW">Wrocław</option>
-                                </select>
-                                <span>Ostatnia aktualizacja: ...</span>
+                            <div class="col-6 col-md-4 mb-3">
+                                <div class="d-flex align-items-center">
+
+                                    <i class="bi bi-speedometer2 me-2"></i>
+                                    <div>
+                                        <small>Ciśnienie</small>
+                                        <p class="mb-0" id="pressure">- hPa</p>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                        <div class="text-end">
+                            <button class="btn btn-sm btn-outline-light" id="refresh-weather" >
+                                <i class="bi bi-arrow-clockwise" ></i> Odśwież
+                            </button>
+                        </div>
+                       <div class="mt-3 d-flex justify-content-between align-items-center small text-white-50">
+                           <label for="city-selector" class="form-label">Wybierz miasto:</label>
+                            <select id="city-selector" class="form-select form-select-sm w-auto d-inline">
+                                <!-- Opcje będą dynamicznie dodawane przez JS. Usuwamy domyślną opcję. -->
+                            </select>
+                            <span id="last-update"></span> <!-- Puste na start, JS wstawi czas -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Sekcja szybkich akcji -->
     <div class="row mb-4">
