@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_POST
 from .models import Task, Conversation, Message
-from .forms import TaskForm
+from .forms import TaskForm, ChatForm
 from django.utils import timezone
 from openai import OpenAI
 import json
@@ -295,150 +295,141 @@ def get_api_key():
 #                   {"form": form, "error_message": error_message,
 #                    "assistant_response": assistant_response, "response": response, "messages": messages})
 
-def chat(request, conversation_id=None): # Dodajemy opcjonalny conversation_id z URL (krok zaawansowany, na razie pomińmy)
-
+def chat(request, conversation_id=None):
     api_key = get_api_key()
     error_message = None
-    model = "gpt-4o" # lub gpt-3.5-turbo
-    form = ChatForm() # Pusty formularz na start (dla GET)
+    model = "gpt-4o"
+    form = ChatForm() # Zawsze zaczynaj z pustym formularzem dla GET
     current_conversation = None
-    messages_queryset = Message.objects.none() # Pusty queryset na start
+    messages_queryset = Message.objects.none()
+
+    # --- Pobierz listę konwersacji dla sidebara (Zawsze) ---
+    # TODO: W przyszłości filtruj po zalogowanym użytkowniku, jeśli dodasz logowanie
+    conversation_history_list = Conversation.objects.all().order_by('-created_at')
 
     if not api_key:
         error_message = "Błędna konfiguracja aplikacji. Skontaktuj się z administratorem."
-        # Dla GET request można by od razu zwrócić render z błędem, ale obsłużymy to niżej
+        # Można od razu renderować z błędem, ale obsłużymy poniżej
 
-    # --- Logika dla GET (ładowanie strony) ---
+    # --- Logika dla GET (ładowanie strony / kliknięcie linku rozmowy / kliknięcie "Nowa rozmowa") ---
     if request.method == 'GET':
-        # Spróbuj pobrać ID bieżącej konwersacji z sesji Django
-        session_conversation_id = request.session.get('conversation_id')
-        if session_conversation_id:
+        if conversation_id:
+            # Użytkownik kliknął link do konkretnej rozmowy
             try:
-                # Używamy get() zamiast filter().first(), aby rzucić wyjątek jeśli nie istnieje
-                current_conversation = Conversation.objects.get(id=session_conversation_id)
-                # Pobierz historię wiadomości dla tej konwersacji
+                current_conversation = Conversation.objects.get(id=conversation_id)
                 messages_queryset = current_conversation.messages.all().order_by('timestamp')
+                # Ustaw tę rozmowę jako aktywną w sesji
+                request.session['conversation_id'] = str(current_conversation.id)
+                request.session.save() # Jawne zapisanie dla pewności
             except Conversation.DoesNotExist:
-                # Jeśli ID w sesji jest nieprawidłowe (np. usunięto konwersację), wyczyść sesję
-                del request.session['conversation_id']
-                current_conversation = None # Resetujemy
+                # ID w URL jest nieprawidłowe, traktuj jak nową rozmowę
+                error_message = "Wybrana rozmowa nie istnieje."
+                if 'conversation_id' in request.session:
+                    del request.session['conversation_id'] # Wyczyść błędne ID z sesji
+                current_conversation = None
                 messages_queryset = Message.objects.none()
+                # Można też przekierować: return redirect('chat')
+        else:
+            # Użytkownik wszedł na /chat/ lub kliknął "Nowa rozmowa"
+            # Kluczowe: Usuń ID poprzedniej rozmowy z sesji, aby wymusić utworzenie nowej przy POST
+            if 'conversation_id' in request.session:
+                del request.session['conversation_id']
+                request.session.save()
+            # Stan dla nowej rozmowy (już ustawiony domyślnie)
+            current_conversation = None
+            messages_queryset = Message.objects.none()
 
     # --- Logika dla POST (wysyłanie wiadomości) ---
     elif request.method == 'POST' and api_key:
         form = ChatForm(request.POST)
         if form.is_valid():
             user_prompt = form.cleaned_data["prompt"]
+            session_conversation_id = request.session.get('conversation_id')
 
             # --- Znajdź lub stwórz konwersację ---
-            session_conversation_id = request.session.get('conversation_id')
             if session_conversation_id:
                 try:
                     current_conversation = Conversation.objects.get(id=session_conversation_id)
                 except Conversation.DoesNotExist:
-                    # Jeśli ID w sesji jest złe, stwórz nową konwersację
+                    # Sesja miała ID, ale rozmowy już nie ma -> stwórz nową
                     current_conversation = Conversation.objects.create()
-                    request.session['conversation_id'] = str(current_conversation.id) # Zapisz nowe ID w sesji
-                    request.session.save() # Jawne zapisanie sesji może być potrzebne
+                    request.session['conversation_id'] = str(current_conversation.id)
+                    request.session.save()
             else:
-                # Jeśli nie ma ID w sesji, stwórz nową konwersację
+                # Brak ID w sesji (bo to pierwszy POST po wejściu na /chat/ lub po błędzie) -> stwórz nową
                 current_conversation = Conversation.objects.create()
                 request.session['conversation_id'] = str(current_conversation.id)
                 request.session.save()
 
-            # --- Automatyczne ustawienie tytułu konwersacji  ---
+            # --- Ustawienie tytułu (jeśli go nie ma) ---
             if not current_conversation.title and user_prompt:
-                 current_conversation.title = Truncator(user_prompt).chars(80) # Skróć pierwszy prompt
+                 current_conversation.title = Truncator(user_prompt).chars(50) # Możesz dostosować długość
                  current_conversation.save()
 
-            # --- Zapisz wiadomość użytkownika w bazie ---
+            # --- Zapisz wiadomość użytkownika ---
             user_message_obj = Message.objects.create(
-                conversation=current_conversation,
-                role='user',
-                content=user_prompt
+                conversation=current_conversation, role='user', content=user_prompt
             )
-            # Pobierz timestamp *po* zapisaniu
             user_timestamp = user_message_obj.get_formatted_timestamp()
 
-            # --- Przygotuj historię dla OpenAI (z bazy danych) ---
-            openai_history = []
-            # Pobierz wszystkie wiadomości dla tej konwersacji (w tym nowo dodaną)
-            messages_queryset = current_conversation.messages.all().order_by('timestamp')
-            for msg in messages_queryset:
-                openai_history.append({"role": msg.role, "content": msg.content})
+            # --- Przygotuj historię dla OpenAI ---
+            openai_history = [{"role": msg.role, "content": msg.content}
+                              for msg in current_conversation.messages.all().order_by('timestamp')]
 
             # --- Wywołanie OpenAI ---
             try:
                 client = OpenAI(api_key=api_key)
                 response = client.chat.completions.create(
-                    model=model,
-                    messages=openai_history, # Używamy historii z bazy
-                    temperature=0.7
+                    model=model, messages=openai_history, temperature=0.7
                 )
                 assistant_response_content = response.choices[0].message.content
 
-                # --- Zapisz odpowiedź asystenta w bazie ---
+                # --- Zapisz odpowiedź asystenta ---
                 assistant_message_obj = Message.objects.create(
-                    conversation=current_conversation,
-                    role='assistant',
-                    content=assistant_response_content
+                    conversation=current_conversation, role='assistant', content=assistant_response_content
                 )
                 assistant_timestamp = assistant_message_obj.get_formatted_timestamp()
 
-
                 # --- Odpowiedź AJAX ---
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    # Odśwież listę historii PO dodaniu nowej wiadomości/konwersacji
+                    # aby sidebar mógł się potencjalnie zaktualizować (jeśli dodasz taką logikę w JS)
+                    # Chociaż prostsze jest odświeżenie strony po przejściu do innej konwersacji.
+                    # conversation_history_list = Conversation.objects.all().order_by('-created_at')
+                    # Na razie nie wysyłamy historii w AJAX, sidebar aktualizuje się przy przeładowaniu strony.
                     return JsonResponse({
                         'status': 'success',
-                        'user_message': { # Zwracamy też info o wiadomości usera
-                            'role': 'user',
-                            'content': user_prompt,
-                            'timestamp': user_timestamp
-                        },
-                        'assistant_message': { # Zwracamy obiekt wiadomości asystenta
-                            'role': 'assistant',
-                            'content': assistant_response_content,
-                            'timestamp': assistant_timestamp # Dodajemy timestamp!
-                        }
-                        # Nie wysyłamy już całej historii JSON, bo JS dodaje tylko nowe wiadomości
+                        'user_message': {'role': 'user', 'content': user_prompt, 'timestamp': user_timestamp},
+                        'assistant_message': {'role': 'assistant', 'content': assistant_response_content, 'timestamp': assistant_timestamp}
                     })
 
-                # --- Odpowiedź dla zwykłego POST (jeśli AJAX nie był użyty) ---
-                # Odświeżamy queryset, żeby zawierał nową odpowiedź asystenta
+                # --- Odpowiedź dla zwykłego POST (jeśli AJAX nie był użyty - mało prawdopodobne z twoim JS) ---
                 messages_queryset = current_conversation.messages.all().order_by('timestamp')
-                form = ChatForm() # Wyczyść formularz po udanym wysłaniu
+                form = ChatForm() # Wyczyść formularz
 
             except Exception as e:
-                error_message = f"Wystąpił błąd podczas komunikacji z OpenAI: {str(e)}"
-                print(f"OpenAI API Error: {e}") # Logowanie błędu
-                # Odpowiedź AJAX z błędem
+                error_message = f"Błąd OpenAI: {str(e)}"
+                print(f"OpenAI Error: {e}")
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return JsonResponse({
-                        'status': 'error',
-                        'error_message': error_message
-                    }, status=500)
-                # Dla zwykłego POST błąd zostanie wyświetlony na stronie
+                    return JsonResponse({'status': 'error', 'error_message': error_message}, status=500)
 
-        else: # form.is_valid() == False
-            # Jeśli formularz jest nieprawidłowy (np. pusty prompt, chociaż JS powinien to blokować)
-            error_message = "Wystąpił błąd w formularzu."
-            print(f"Błędy walidacji formularza ChatForm: {form.errors}")
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                 return JsonResponse({'status': 'error', 'error_message': 'Nieprawidłowe dane wejściowe.'}, status=400)
+        else: # Formularz nieprawidłowy
+             error_message = "Błąd formularza."
+             print(f"ChatForm errors: {form.errors}")
+             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                 return JsonResponse({'status': 'error', 'error_message': 'Nieprawidłowe dane.'}, status=400)
+
+        # --- Odśwież listę historii po udanym POST ---
+        # To ważne, jeśli nowa konwersacja została właśnie utworzona
+        conversation_history_list = Conversation.objects.all().order_by('-created_at')
 
 
     # --- Przygotowanie kontekstu dla szablonu (dla GET i zwykłego POST) ---
     context = {
         "form": form,
         "error_message": error_message,
-        "messages": messages_queryset, # Przekazujemy queryset wiadomości
-        "conversation": current_conversation # Możemy przekazać też obiekt konwersacji
+        "messages": messages_queryset,       # Wiadomości *bieżącej* rozmowy (lub puste)
+        "conversation": current_conversation, # *Bieżący* obiekt rozmowy (lub None)
+        "conversation_history_list": conversation_history_list # *Lista* wszystkich rozmów dla sidebara
     }
     return render(request, "myapp/chat.html", context)
-
-# --- Widok historii rozmów (przykład) ---
-def chat_history(request):
-    # Pobierz wszystkie konwersacje (można filtrować np. po użytkowniku, jeśli go dodasz)
-    # Tutaj pobieramy wszystkie, co może być nieefektywne przy dużej ilości
-    conversations = Conversation.objects.all().order_by('-created_at')
-    return render(request, "myapp/chat_history.html", {"conversations": conversations})

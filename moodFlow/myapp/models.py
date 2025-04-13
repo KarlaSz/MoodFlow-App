@@ -43,7 +43,7 @@ class Conversation(models.Model):
     Reprezentuje pojedynczą sesję rozmowy powiązaną z sesją Django.
     """
     # Zamiast ForeignKey do User, używamy klucza sesji
-    id = models.UUIDField(  # Zmieniamy na UUID
+    id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,  # Automatycznie generuj UUID
         editable=False
@@ -66,7 +66,7 @@ class Conversation(models.Model):
 
     def __str__(self):
         truncated_title = Truncator(self.title).chars(50)
-        return f"Rozmowa {self.id} - {truncated_title or '[Brak tytułu]'}"
+        return self.title or f"Conversation {self.id}"
 
     def save(self, *args, **kwargs):
         # Opcjonalnie: Automatycznie ustaw tytuł na podstawie pierwszej wiadomości

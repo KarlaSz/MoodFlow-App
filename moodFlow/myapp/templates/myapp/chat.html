@@ -15,23 +15,43 @@
                 <hr class="mt-0">
                 <div class="sidebar-list-container flex-grow-1">
                     <ul class="list-unstyled chat-history-list">
-                        {# Tutaj dynamicznie załaduj listę konwersacji z widoku chat_history #}
-                        {# Przykład statyczny: #}
-                        {# Zakładając, że masz URL o nazwie 'chat' przyjmujący conversation_id #}
-                        {% if conversation and conversation.id %}
-                            <li><a href="{% url 'chat_view_conversation' conversation_id=conversation.id %}" class="active bg-success">Aktualna Rozmowa</a></li>
-                        {% else %}
-                             <li><a href="{% url 'chat' %}" class="active bg-success">Nowa Rozmowa</a></li>
+
+                        {# --- Link do rozpoczęcia NOWEJ rozmowy --- #}
+                        {# Jest aktywny, jeśli ŻADNA konkretna rozmowa nie jest załadowana #}
+                        <li>
+                            <a href="{% url 'chat' %}"
+                               class="{% if not conversation %}active bg-success{% endif %}">
+                                + Nowa Rozmowa
+                            </a>
+                        </li>
+
+                        {# --- Nagłówek dla historii (jeśli istnieje) --- #}
+                        {% if conversation_history_list %}
+                            <li class="mt-2 mb-1"><small class="text-muted">Poprzednie:</small></li>
                         {% endif %}
-                        {# Przykładowa pętla po konwersacjach z innego widoku #}
-                        {# {% for conv in recent_conversations %} #}
-                        {#   <li><a href="{% url 'chat' conversation_id=conv.id %}">{{ conv.title|default:"Rozmowa bez tytułu" }}</a></li> #}
-                        {# {% endfor %} #}
+
+                        {# --- Pętla po historii rozmów z widoku --- #}
+                        {% for conv in conversation_history_list %}
+                            {# Generuj URL do widoku tej konkretnej rozmowy #}
+                            {% url 'chat_view_conversation' conversation_id=conv.id as conv_url %}
+                            <li>
+                                {# Link do konkretnej rozmowy #}
+                                {# Jest aktywny, jeśli ID rozmowy z pętli zgadza się z ID aktualnie załadowanej rozmowy #}
+                                <a href="{{ conv_url }}"
+                                   title="{{ conv.title|default:'Rozmowa bez tytułu' }}" {# Pełny tytuł w podpowiedzi #}
+                                   class="{% if conversation and conversation.id == conv.id %}active bg-success{% endif %}">
+                                     {# Wyświetl tytuł, użyj domyślnego jeśli pusty, skróć dla zwięzłości #}
+                                     {{ conv.title|default:"Rozmowa bez tytułu"|truncatechars:25 }}
+                                </a>
+                            </li>
+                        {% empty %}
+                             {# Komunikat, jeśli nie ma żadnych zapisanych rozmów (poza linkiem "Nowa Rozmowa") #}
+                             {# Możesz to zostawić puste lub dodać tekst #}
+                             {# <li><em class="text-muted small">Brak historii</em></li> #}
+                        {% endfor %}
                     </ul>
                 </div>
-                 <a href="{% url 'chat' %}" class="btn btn-outline-secondary btn-sm mt-auto"> {# Link do rozpoczęcia nowej rozmowy #}
-                     Nowa rozmowa
-                 </a>
+                 {# Usunęliśmy stary przycisk "Nowa rozmowa", bo mamy link na górze listy #}
             </div>
         </div>
 
