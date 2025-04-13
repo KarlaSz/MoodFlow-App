@@ -54,11 +54,11 @@
                             {% for message in messages %}
                                 {# Pomiń ewentualny pierwszy pusty message systemowy jeśli go masz #}
                                 {% if message.role %}
-                                    {# ===>>> KLUCZOWA ZMIANA: Usunięto klasę 'alert' <<<=== #}
+
                                     <div class="message-bubble bg-{% if message.role == 'user' %}success{% else %}dark{% endif %}">
                                         <div class="chat-text"> {# Użyj DIV zamiast P dla bezpieczeństwa zagnieżdżania #}
-                                            <strong>{% if message.role == 'user' %}Ty{% else %}ChatGPT{% endif %}:</strong><br>
-                                            {# Zakładamy, że treść jest już sparsowana przez JS lub bezpieczna #}
+                                            <strong>{% if message.role == 'user' %}Ty{% else %}ChatGPT{% endif %}:</strong>
+                                            <br>
                                             {{ message.content|safe }}
                                         </div>
                                     </div>
@@ -77,7 +77,7 @@
                      <div class="text-center my-2 d-none" id="loadingSpinner">
                          <button class="btn btn-warning btn-sm" type="button" disabled>
                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                             Przetwarzam...
+                             Czekaj odpowiadam...
                          </button>
                      </div>
 

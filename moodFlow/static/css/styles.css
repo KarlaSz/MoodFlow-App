@@ -25,13 +25,16 @@
 
     /* Animacja dla spinnera chata*/
     @keyframes pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.8; }
-        100% { transform: scale(1); opacity: 1; }
-    }
+    0% { transform: scale(1); opacity: 1; }
+    25% { transform: scale(1.1); opacity: 0.85; } /* Lepsze wartości dla płynności */
+    50% { transform: scale(1.2); opacity: 0.7; }  /* Lepsze wartości dla płynności */
+    75% { transform: scale(1.1); opacity: 0.85; } /* Lepsze wartości dla płynności */
+    100% { transform: scale(1); opacity: 1; }
+}
 
     #loadingSpinner .spinner-border {
-        animation: pulse 1.5s infinite ease-in-out, spinner-border 0.75s linear infinite;
+        animation: pulse 2s infinite linear;
+        transform-origin: center;
     }
 
 .weather-data-loading {
@@ -267,16 +270,14 @@
 .chat-text {
     white-space: pre-wrap;
     line-height: 1.45;
-    margin-bottom: 0;
-    font-size: 0.9rem;
 }
 
 .chat-text strong {
     display: block;
     margin-bottom: 0.2rem;
     font-weight: 600;
-    font-size: 0.75rem;
-    opacity: 0.8; /* Lekko przygaszona etykieta */
+    font-size: 0.8rem;
+    opacity: 0.8;
     color: inherit; /* Dziedziczy kolor z rodzica (.message-bubble) */
 }
 
