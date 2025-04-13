@@ -1,79 +1,89 @@
 {% extends "base.html" %}
 {% load static %}
+{% load tz %} {# Dodaj to do obsługi stref czasowych, jeśli potrzebujesz #}
+
 {% block title %}Chat - Twój Asystent{% endblock %}
 
 {% block content %}
-{# Użyjemy container-fluid dla pełnej szerokości, ale dodamy padding #}
 <div class="container-fluid pt-3 pb-3">
-    {# Główny wiersz dla layoutu dwukolumnowego #}
     <div class="row chat-layout-row">
 
         <!-- Sidebar Kolumna (Historia Rozmów) -->
        <div class="col-lg-3 col-md-4 order-md-1">
-                <div id="chat-sidebar"> {# h-100 i d-flex są dodane przez CSS teraz #}
-                    <h5 class="mb-3 text-secondary">Historia Rozmów</h5>
-                    <hr class="mt-0">
-
-                    {# --- NOWY DIV dla scrollowania listy --- #}
-                    <div class="sidebar-list-container flex-grow-1">
-                        <ul class="list-unstyled chat-history-list">
-                            {# --- Elementy listy historii --- #}
-                            <li><a href="#" class="active bg-success">Rozmowa z dzisiaj</a></li>
-                            <li><a href="#">Przepis na pizzę</a></li>
-                            <li><a href="#">Pomysły na wakacje</a></li>
-                            <li><a href="#">Python - podstawy</a></li>
-                            {# --- Koniec elementów listy --- #}
-                        </ul>
-                    </div>
-                    {# --- Koniec DIVa scrollującego --- #}
-
-                     <button class="btn btn-outline-secondary btn-sm mt-auto"> {# mt-auto wypycha na dół #}
-                         Nowa rozmowa
-                     </button>
+            <div id="chat-sidebar">
+                <h5 class="mb-3 text-secondary">Historia Rozmów</h5>
+                <hr class="mt-0">
+                <div class="sidebar-list-container flex-grow-1">
+                    <ul class="list-unstyled chat-history-list">
+                        {# Tutaj dynamicznie załaduj listę konwersacji z widoku chat_history #}
+                        {# Przykład statyczny: #}
+                        {# Zakładając, że masz URL o nazwie 'chat' przyjmujący conversation_id #}
+                        {% if conversation and conversation.id %}
+                            <li><a href="{% url 'chat_view_conversation' conversation_id=conversation.id %}" class="active">Aktualna Rozmowa</a></li>
+                        {% else %}
+                             <li><a href="{% url 'chat' %}" class="active bg-success">Nowa Rozmowa</a></li>
+                        {% endif %}
+                        {# Przykładowa pętla po konwersacjach z innego widoku #}
+                        {# {% for conv in recent_conversations %} #}
+                        {#   <li><a href="{% url 'chat' conversation_id=conv.id %}">{{ conv.title|default:"Rozmowa bez tytułu" }}</a></li> #}
+                        {# {% endfor %} #}
+                         <li><a href="#">Inna rozmowa 1</a></li>
+                         <li><a href="#">Inna rozmowa 2</a></li>
+                    </ul>
                 </div>
+                 <a href="{% url 'chat' %}" class="btn btn-outline-secondary btn-sm mt-auto"> {# Link do rozpoczęcia nowej rozmowy #}
+                     Nowa rozmowa
+                 </a>
             </div>
+        </div>
 
         <!-- Główny Obszar Czatu Kolumna -->
-        <div class="col-lg-9 col-md-8 order-md-2"> {# Główny obszar zajmuje resztę szerokości #}
-             {# Używamy flexboxa do zarządzania wysokością i układem wewnętrznym #}
+        <div class="col-lg-9 col-md-8 order-md-2">
              <div id="main-chat-area" class="bg-light p-3 p-md-4 rounded shadow-sm d-flex flex-column h-100">
 
                 <h1 class="h4 text-dark mb-3 text-center">Twój Asystent Rozmowy</h1>
 
-                <div id="error-container" class="alert alert-danger d-none mb-3">
+                {# Wyświetlanie błędu z widoku #}
+                {% if error_message %}
+                <div id="error-container" class="alert alert-danger mb-3">
+                    <p id="error-message" class="mb-0">{{ error_message }}</p>
+                </div>
+                {% else %}
+                 <div id="error-container" class="alert alert-danger d-none mb-3">
                     <p id="error-message" class="mb-0"></p>
                 </div>
+                {% endif %}
 
-                {# Kontener wiadomości - zajmie dostępną przestrzeń i będzie przewijany #}
+
                 <div id="chat-container" class="flex-grow-1 overflow-auto mb-3 chat-messages-container">
                     <div id="chat-messages">
-                        {# Wiadomości ładowane dynamicznie przez chat.js pojawią się tutaj #}
-
-                        {# Przykład jak mogą wyglądać wiadomości po załadowaniu strony (jeśli przekazujesz 'messages') #}
+                        {# === WYŚWIETLANIE WIADOMOŚCI Z BAZY (przy ładowaniu strony) === #}
                         {% if messages %}
                             {% for message in messages %}
-                                {# Pomiń ewentualny pierwszy pusty message systemowy jeśli go masz #}
-                                {% if message.role %}
-
-                                    <div class="message-bubble bg-{% if message.role == 'user' %}success{% else %}dark{% endif %}">
-                                        <div class="chat-text"> {# Użyj DIV zamiast P dla bezpieczeństwa zagnieżdżania #}
-                                            <strong>{% if message.role == 'user' %}Ty{% else %}ChatGPT{% endif %}:</strong><br>
-                                            {# Zakładamy, że treść jest już sparsowana przez JS lub bezpieczna #}
-                                            {{ message.content|safe }}
-                                        </div>
+                                <div class="message-bubble bg-{% if message.role == 'user' %}success{% else %}dark{% endif %}">
+                                    <div class="chat-text">
+                                        <strong>{% if message.role == 'user' %}Ty{% else %}ChatGPT{% endif %}:</strong><br>
+                                        {# Bezpieczne wyświetlanie treści - zakładamy, że jest już OK lub użyj {{ message.content|safe }} jeśli ufasz źródłu #}
+                                        {{ message.content|safe }}
                                     </div>
-                                {% endif %}
+                                     {# === DODANIE CZASU === #}
+                                    <small class="message-timestamp text-white-50 d-block text-end mt-1">
+                                         {# Użyj filtra |date lub |time, albo metody z modelu #}
+                                         {# {{ message.timestamp|time:"H:i" }} #}
+                                         {{ message.get_formatted_timestamp }}
+                                    </small>
+                                     {# ===================== #}
+                                </div>
                             {% endfor %}
                          {% else %}
-                             {# Możesz dodać wiadomość powitalną, jeśli historia jest pusta #}
                              <div class="text-center text-muted p-4">Rozpocznij rozmowę wpisując wiadomość poniżej.</div>
                          {% endif %}
+                         {# Wiadomości dodawane przez JS pojawią się tutaj #}
                     </div>
                 </div>
 
                 {# Obszar formularza wejściowego - pozostaje na dole #}
                 <div class="mt-auto chat-input-area">
-                    {# Spinner ładowania - umieszczony bliżej inputu #}
                      <div class="text-center my-2 d-none" id="loadingSpinner">
                          <button class="btn btn-warning btn-sm" type="button" disabled>
                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -81,16 +91,11 @@
                          </button>
                      </div>
 
-                    <form id="chatForm" method="POST">
+                    <form id="chatForm" method="POST"> {# method="POST" jest ważny #}
                         {% csrf_token %}
-                        {# Historia konwersacji (hidden input) - bez zmian #}
-                        <input type="hidden" id="conversation_history" name="conversation_history" value="{{ form.conversation_history.value|default:'[]' }}">
-
-                         {# Grupa input + przycisk #}
-                         <div class="input-group">
-                             {# Załóżmy, że form.prompt renderuje pole tekstowe/textarea #}
-                             {# Możesz potrzebować dodać klasy Bootstrapa do widgetu w forms.py #}
-                             {{ form.prompt }}
+                        {# Usunęliśmy hidden input conversation_history #}
+                        <div class="input-group">
+                             {{ form.prompt }} {# Zakładamy, że form ma pole 'prompt' #}
                              <button type="submit" class="btn btn-success" id="submitBtn">
                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
                                       <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.001.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
@@ -99,15 +104,15 @@
                              </button>
                          </div>
                     </form>
-                </div> {# Koniec chat-input-area #}
+                </div>
 
-            </div> {# Koniec main-chat-area #}
-        </div> {# Koniec Głównego Obszaru Czatu #}
+            </div>
+        </div>
 
-    </div> {# Koniec chat-layout-row #}
-</div> {# Koniec container-fluid #}
+    </div>
+</div>
 
-<!-- JavaScript - upewnij się, że marked.js jest załadowany PRZED chat.js -->
+<!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{% static 'js/chat.js' %}"></script>
 

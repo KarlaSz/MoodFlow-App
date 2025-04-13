@@ -1,7 +1,8 @@
 from django.db import models
-from django.conf import settings # Aby powiązać z modelem User
 from django.utils import timezone
 from django.utils.text import Truncator # Do skracania tytułu
+import uuid
+from django.conf import settings
 
 
 MOOD_CHOICES = [
@@ -42,12 +43,12 @@ class Conversation(models.Model):
     Reprezentuje pojedynczą sesję rozmowy powiązaną z sesją Django.
     """
     # Zamiast ForeignKey do User, używamy klucza sesji
-    session_key = models.CharField(
-        max_length=40, # Standardowa długość klucza sesji Django
-        db_index=True, # Indeks dla szybszego wyszukiwania
-        null=True, # Może być null, jeśli sesja nie istnieje (choć rzadkie)
-        blank=True
+    id = models.UUIDField(  # Zmieniamy na UUID
+        primary_key=True,
+        default=uuid.uuid4,  # Automatycznie generuj UUID
+        editable=False
     )
+    #
     title = models.CharField(
         max_length=100,
         blank=True,
@@ -65,8 +66,12 @@ class Conversation(models.Model):
 
     def __str__(self):
         truncated_title = Truncator(self.title).chars(50)
-        session_part = f" (Sesja: ...{self.session_key[-6:]})" if self.session_key else ""
-        return f"Rozmowa {self.id}{session_part} - {truncated_title}"
+        return f"Rozmowa {self.id} - {truncated_title or '[Brak tytułu]'}"
+
+    def save(self, *args, **kwargs):
+        # Opcjonalnie: Automatycznie ustaw tytuł na podstawie pierwszej wiadomości
+        # Można to zrobić w widoku po zapisaniu pierwszej wiadomości.
+        super().save(*args, **kwargs)
 
 # Model Message pozostaje bez zmian
 class Message(models.Model):
@@ -94,4 +99,9 @@ class Message(models.Model):
         verbose_name_plural = "Wiadomości"
 
     def __str__(self):
-        return f"{self.get_role_display()} ({self.conversation.id}): {Truncator(self.content).chars(50)}"
+        return f"{self.get_role_display()} ({self.conversation_id}): {Truncator(self.content).chars(50)}"
+
+        # Dodajmy metodę do formatowania czasu dla szablonu/API
+
+    def get_formatted_timestamp(self, format="%H:%M"):
+        return self.timestamp.strftime(format)

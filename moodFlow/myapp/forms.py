@@ -18,6 +18,5 @@ class ChatForm(forms.Form):
     prompt = forms.CharField(label="Prompt", widget=forms.Textarea(attrs={"class": "form-control",
                                                                            "placeholder": "Napisz coś i rozmawiaj...",
                                                                            "id": "prompt",
-                                                                          "rows":2,
+                                                                             "rows":2,
                                                                     }))
-    conversation_history = forms.CharField(required=False, widget=forms.HiddenInput())

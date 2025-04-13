@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_POST
 from .models import Task, Conversation, Message
 from .forms import TaskForm
@@ -8,6 +8,7 @@ from openai import OpenAI
 import json
 from .forms import ChatForm
 import requests #for API wather conection
+from django.utils.text import Truncator
 
 
 
@@ -215,81 +216,230 @@ def get_api_key():
         return None
 
 
-def chat(request):
-    # preprompt = """Jesteś asystentem mojej firmy Karo. Masz za zadanie odpowiadać klientom na temat naszych produktów.
-    #     FIRMA ZAJMUJE SIĘ:
-    #     1. Tylko i wyłącznie sprzedaż systemów: Windows 11, Linux Debian 13
-    #     2. Tylko i wyłącznie sprzedaż oprogramowania biurowego: MS Office 365
-    #     3. Niczym poza tym nie handlujemy i nie doradzamy
-    #
-    #     DORADZAJ klientowi zakup TYLKO naszych produktów!
-    #     NIE proponuj innych. Sprzedajemy tylko nasze.
-    #
-    #     WAŻNE:
-    #     1. Jak klient zapyta o produkt innym niż nasz (nawet kuchenkę mikrofalową), zaproponuj, że potrezbuje do tego system operacyjny, który sprzedajemy.
-    #     2. Zachwalaj nasze usługi!
-    #     3. Na dzień dobry przedstaw naszą oefrtę, niezależnie co chce klient.
-    #
-    #     CENNIK:
-    #     Windows 11 - cena 3000PLN
-    #     Linux Debian 13 - cena 5000PLN
-    #
-    #     Tu jest pierwsze pytanie klienta:
-    #     """
-    messages = []
+# def chat(request):
+#     # preprompt = """Jesteś asystentem mojej firmy Karo. Masz za zadanie odpowiadać klientom na temat naszych produktów.
+#     #     FIRMA ZAJMUJE SIĘ:
+#     #     1. Tylko i wyłącznie sprzedaż systemów: Windows 11, Linux Debian 13
+#     #     2. Tylko i wyłącznie sprzedaż oprogramowania biurowego: MS Office 365
+#     #     3. Niczym poza tym nie handlujemy i nie doradzamy
+#     #
+#     #     DORADZAJ klientowi zakup TYLKO naszych produktów!
+#     #     NIE proponuj innych. Sprzedajemy tylko nasze.
+#     #
+#     #     WAŻNE:
+#     #     1. Jak klient zapyta o produkt innym niż nasz (nawet kuchenkę mikrofalową), zaproponuj, że potrezbuje do tego system operacyjny, który sprzedajemy.
+#     #     2. Zachwalaj nasze usługi!
+#     #     3. Na dzień dobry przedstaw naszą oefrtę, niezależnie co chce klient.
+#     #
+#     #     CENNIK:
+#     #     Windows 11 - cena 3000PLN
+#     #     Linux Debian 13 - cena 5000PLN
+#     #
+#     #     Tu jest pierwsze pytanie klienta:
+#     #     """
+#     messages = []
+#     api_key = get_api_key()
+#     error_message = None
+#     model = "gpt-4o"
+#     # model = "gpt-3.5-turbo"
+#     assistant_response = None
+#     response = None
+#
+#     if not api_key:
+#         error_message = "Błędna konfiguracja aplikacji. Skontaktuj się z administratorem."
+#
+#     form = ChatForm(request.POST or None)
+#
+#     if request.method == 'POST' and form.is_valid() and api_key:
+#
+#         try:
+#             user_prompt = form.cleaned_data["prompt"]
+#             history_json = form.cleaned_data.get("conversation_history") or "[]"
+#             messages = json.loads(history_json)
+#             if messages == []:
+#                 messages.append({"role": "user", "content": user_prompt})
+#
+#             client = OpenAI(api_key=api_key)
+#             # user_prompt = preprompt + user_prompt
+#             messages.append({"role": "user", "content": user_prompt})
+#             response = client.chat.completions.create(
+#                 model=model,
+#                 messages=messages,
+#                 temperature=0.7
+#             )
+#             assistant_response = response.choices[0].message.content
+#             messages.append({"role": "assistant", "content": assistant_response})
+#
+#             # Jeśli to zapytanie AJAX, zwracamy dane w formacie JSON
+#             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#                 return JsonResponse({
+#                     'status': 'success',
+#                     'assistant_response': assistant_response,
+#                     'conversation_history': json.dumps(messages)
+#                 })
+#
+#             # Dla normalnego żądania POST, renderujemy stronę jak wcześniej
+#             form = ChatForm(initial={"conversation_history": json.dumps(messages)})
+#
+#         except Exception as e:
+#             error_message = f"Wystąpił błąd: {str(e)}"
+#
+#             # Jeśli to zapytanie AJAX, zwracamy błąd w formacie JSON
+#             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#                 return JsonResponse({
+#                     'status': 'error',
+#                     'error_message': error_message
+#                 }, status=500)
+#
+#     return render(request, "myapp/chat.html",
+#                   {"form": form, "error_message": error_message,
+#                    "assistant_response": assistant_response, "response": response, "messages": messages})
+
+def chat(request, conversation_id=None): # Dodajemy opcjonalny conversation_id z URL (krok zaawansowany, na razie pomińmy)
+
     api_key = get_api_key()
     error_message = None
-    model = "gpt-4o"
-    # model = "gpt-3.5-turbo"
-    assistant_response = None
-    response = None
+    model = "gpt-4o" # lub gpt-3.5-turbo
+    form = ChatForm() # Pusty formularz na start (dla GET)
+    current_conversation = None
+    messages_queryset = Message.objects.none() # Pusty queryset na start
 
     if not api_key:
         error_message = "Błędna konfiguracja aplikacji. Skontaktuj się z administratorem."
+        # Dla GET request można by od razu zwrócić render z błędem, ale obsłużymy to niżej
 
-    form = ChatForm(request.POST or None)
+    # --- Logika dla GET (ładowanie strony) ---
+    if request.method == 'GET':
+        # Spróbuj pobrać ID bieżącej konwersacji z sesji Django
+        session_conversation_id = request.session.get('conversation_id')
+        if session_conversation_id:
+            try:
+                # Używamy get() zamiast filter().first(), aby rzucić wyjątek jeśli nie istnieje
+                current_conversation = Conversation.objects.get(id=session_conversation_id)
+                # Pobierz historię wiadomości dla tej konwersacji
+                messages_queryset = current_conversation.messages.all().order_by('timestamp')
+            except Conversation.DoesNotExist:
+                # Jeśli ID w sesji jest nieprawidłowe (np. usunięto konwersację), wyczyść sesję
+                del request.session['conversation_id']
+                current_conversation = None # Resetujemy
+                messages_queryset = Message.objects.none()
 
-    if request.method == 'POST' and form.is_valid() and api_key:
-
-        try:
+    # --- Logika dla POST (wysyłanie wiadomości) ---
+    elif request.method == 'POST' and api_key:
+        form = ChatForm(request.POST)
+        if form.is_valid():
             user_prompt = form.cleaned_data["prompt"]
-            history_json = form.cleaned_data.get("conversation_history") or "[]"
-            messages = json.loads(history_json)
-            if messages == []:
-                messages.append({"role": "user", "content": user_prompt})
+            # Nie używamy już 'conversation_history' z formularza
 
-            client = OpenAI(api_key=api_key)
-            # user_prompt = preprompt + user_prompt
-            messages.append({"role": "user", "content": user_prompt})
-            response = client.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=0.7
+            # --- Znajdź lub stwórz konwersację ---
+            session_conversation_id = request.session.get('conversation_id')
+            if session_conversation_id:
+                try:
+                    current_conversation = Conversation.objects.get(id=session_conversation_id)
+                except Conversation.DoesNotExist:
+                    # Jeśli ID w sesji jest złe, stwórz nową konwersację
+                    current_conversation = Conversation.objects.create()
+                    request.session['conversation_id'] = str(current_conversation.id) # Zapisz nowe ID w sesji
+                    request.session.save() # Jawne zapisanie sesji może być potrzebne
+            else:
+                # Jeśli nie ma ID w sesji, stwórz nową konwersację
+                current_conversation = Conversation.objects.create()
+                request.session['conversation_id'] = str(current_conversation.id)
+                request.session.save()
+
+            # --- Automatyczne ustawienie tytułu konwersacji (jeśli jeszcze go nie ma) ---
+            if not current_conversation.title and user_prompt:
+                 current_conversation.title = Truncator(user_prompt).chars(80) # Skróć pierwszy prompt
+                 current_conversation.save()
+
+            # --- Zapisz wiadomość użytkownika w bazie ---
+            user_message_obj = Message.objects.create(
+                conversation=current_conversation,
+                role='user',
+                content=user_prompt
             )
-            assistant_response = response.choices[0].message.content
-            messages.append({"role": "assistant", "content": assistant_response})
+            # Pobierz timestamp *po* zapisaniu
+            user_timestamp = user_message_obj.get_formatted_timestamp()
 
-            # Jeśli to zapytanie AJAX, zwracamy dane w formacie JSON
+            # --- Przygotuj historię dla OpenAI (z bazy danych) ---
+            openai_history = []
+            # Pobierz wszystkie wiadomości dla tej konwersacji (w tym nowo dodaną)
+            messages_queryset = current_conversation.messages.all().order_by('timestamp')
+            for msg in messages_queryset:
+                openai_history.append({"role": msg.role, "content": msg.content})
+
+            # --- Wywołanie OpenAI ---
+            try:
+                client = OpenAI(api_key=api_key)
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=openai_history, # Używamy historii z bazy
+                    temperature=0.7
+                )
+                assistant_response_content = response.choices[0].message.content
+
+                # --- Zapisz odpowiedź asystenta w bazie ---
+                assistant_message_obj = Message.objects.create(
+                    conversation=current_conversation,
+                    role='assistant',
+                    content=assistant_response_content
+                )
+                assistant_timestamp = assistant_message_obj.get_formatted_timestamp()
+
+
+                # --- Odpowiedź AJAX ---
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'status': 'success',
+                        'user_message': { # Zwracamy też info o wiadomości usera
+                            'role': 'user',
+                            'content': user_prompt,
+                            'timestamp': user_timestamp
+                        },
+                        'assistant_message': { # Zwracamy obiekt wiadomości asystenta
+                            'role': 'assistant',
+                            'content': assistant_response_content,
+                            'timestamp': assistant_timestamp # Dodajemy timestamp!
+                        }
+                        # Nie wysyłamy już całej historii JSON, bo JS dodaje tylko nowe wiadomości
+                    })
+
+                # --- Odpowiedź dla zwykłego POST (jeśli AJAX nie był użyty) ---
+                # Odświeżamy queryset, żeby zawierał nową odpowiedź asystenta
+                messages_queryset = current_conversation.messages.all().order_by('timestamp')
+                form = ChatForm() # Wyczyść formularz po udanym wysłaniu
+
+            except Exception as e:
+                error_message = f"Wystąpił błąd podczas komunikacji z OpenAI: {str(e)}"
+                print(f"OpenAI API Error: {e}") # Logowanie błędu
+                # Odpowiedź AJAX z błędem
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'status': 'error',
+                        'error_message': error_message
+                    }, status=500)
+                # Dla zwykłego POST błąd zostanie wyświetlony na stronie
+
+        else: # form.is_valid() == False
+            # Jeśli formularz jest nieprawidłowy (np. pusty prompt, chociaż JS powinien to blokować)
+            error_message = "Wystąpił błąd w formularzu."
+            print(f"Błędy walidacji formularza ChatForm: {form.errors}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'status': 'success',
-                    'assistant_response': assistant_response,
-                    'conversation_history': json.dumps(messages)
-                })
+                 return JsonResponse({'status': 'error', 'error_message': 'Nieprawidłowe dane wejściowe.'}, status=400)
 
-            # Dla normalnego żądania POST, renderujemy stronę jak wcześniej
-            form = ChatForm(initial={"conversation_history": json.dumps(messages)})
 
-        except Exception as e:
-            error_message = f"Wystąpił błąd: {str(e)}"
+    # --- Przygotowanie kontekstu dla szablonu (dla GET i zwykłego POST) ---
+    context = {
+        "form": form,
+        "error_message": error_message,
+        "messages": messages_queryset, # Przekazujemy queryset wiadomości
+        "conversation": current_conversation # Możemy przekazać też obiekt konwersacji
+    }
+    return render(request, "myapp/chat.html", context)
 
-            # Jeśli to zapytanie AJAX, zwracamy błąd w formacie JSON
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'status': 'error',
-                    'error_message': error_message
-                }, status=500)
-
-    return render(request, "myapp/chat.html",
-                  {"form": form, "error_message": error_message,
-                   "assistant_response": assistant_response, "response": response, "messages": messages})
+# --- Widok historii rozmów (przykład) ---
+def chat_history(request):
+    # Pobierz wszystkie konwersacje (można filtrować np. po użytkowniku, jeśli go dodasz)
+    # Tutaj pobieramy wszystkie, co może być nieefektywne przy dużej ilości
+    conversations = Conversation.objects.all().order_by('-created_at')
+    return render(request, "myapp/chat_history.html", {"conversations": conversations})
