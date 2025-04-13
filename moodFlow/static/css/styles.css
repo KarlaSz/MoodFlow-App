@@ -32,10 +32,10 @@
     100% { transform: scale(1); opacity: 1; }
 }
 
-    #loadingSpinner .spinner-border {
-        animation: pulse 2s infinite linear;
-        transform-origin: center;
-    }
+#loadingSpinner button {
+    animation: pulse 1.8s infinite ease-in-out;
+    transform-origin: center;
+}
 
 .weather-data-loading {
     visibility: hidden; /* Ukrywa element, ale zachowuje jego miejsce */
