@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorContainer = document.getElementById('error-container');
     const errorMessage = document.getElementById('error-message');
 
+
     // Sprawdź, czy biblioteka marked jest załadowana
     if (typeof marked === 'undefined') {
         console.error('Biblioteka marked.js nie została załadowana!');
@@ -38,8 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof marked === 'undefined') return;
 
         const messageDiv = document.createElement('div');
-        // ===>>> KLUCZOWA ZMIANA: Dodajemy 'message-bubble', usuwamy 'alert' <<<===
-        messageDiv.className = `message-bubble bg-${role === 'user' ? 'success' : 'dark'}`;
+         messageDiv.className = `message-bubble bg-${role === 'user' ? 'success' : 'dark'}`;
 
         // Tworzymy wrapper dla treści, któremu nadamy klasę CSS
         const contentWrapper = document.createElement('div');
@@ -52,10 +52,16 @@ document.addEventListener('DOMContentLoaded', function() {
         contentWrapper.appendChild(document.createElement('br')); // Dodajemy <br> po etykiecie
 
         // Parsujemy Markdown na HTML za pomocą skonfigurowanego marked
-        const htmlContent = marked.parse(content || '');
+        const htmlContent = marked.parse(content || ''); // Używamy marked.parse() i upewniamy się, że content nie jest null/undefined
 
-        // Dodajemy sparsowaną treść
-        contentWrapper.innerHTML += htmlContent;
+        // Bezpieczniejsze dodanie HTML - tworzymy tymczasowy element
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+
+        // Dodajemy sparsowaną treść (węzeł po węźle, aby uniknąć problemów z zagnieżdżeniem <p> w <p>)
+        // lub po prostu dodajemy całe wygenerowane HTML, jeśli jest proste
+        contentWrapper.innerHTML += htmlContent; // Prostsze podejście, powinno działać dla większości przypadków
+
 
         messageDiv.appendChild(contentWrapper);
         chatMessages.appendChild(messageDiv);

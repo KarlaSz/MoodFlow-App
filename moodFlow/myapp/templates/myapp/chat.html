@@ -57,8 +57,8 @@
 
                                     <div class="message-bubble bg-{% if message.role == 'user' %}success{% else %}dark{% endif %}">
                                         <div class="chat-text"> {# Użyj DIV zamiast P dla bezpieczeństwa zagnieżdżania #}
-                                            <strong>{% if message.role == 'user' %}Ty{% else %}ChatGPT{% endif %}:</strong>
-                                            <br>
+                                            <strong>{% if message.role == 'user' %}Ty{% else %}ChatGPT{% endif %}:</strong><br>
+                                            {# Zakładamy, że treść jest już sparsowana przez JS lub bezpieczna #}
                                             {{ message.content|safe }}
                                         </div>
                                     </div>
