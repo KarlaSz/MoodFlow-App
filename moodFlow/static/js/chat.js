@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorContainer = document.getElementById('error-container');
     const errorMessage = document.getElementById('error-message');
 
+
     // Sprawdź, czy biblioteka marked jest załadowana
     if (typeof marked === 'undefined') {
         console.error('Biblioteka marked.js nie została załadowana!');
@@ -30,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof marked === 'undefined') return; // Ponowne sprawdzenie na wszelki wypadek
 
         const messageBubble = document.createElement('div');
-        messageBubble.className = `message-bubble bg-${role === 'user' ? 'success' : 'dark'}`;
+        messageBubble.className = `message-bubble bg-${role === 'user' ? 'success' : 'dark'} text-white mb-2 p-2 rounded` ;
 
         const contentWrapper = document.createElement('div');
         contentWrapper.className = 'chat-text';
@@ -56,6 +57,12 @@ document.addEventListener('DOMContentLoaded', function() {
             timeElement.className = 'message-timestamp text-white-50 d-block text-end mt-1';
             timeElement.textContent = timestamp; // Używamy timestampu przekazanego z backendu
             messageBubble.appendChild(timeElement);
+        } else if (role === 'user') {
+             // Opcjonalnie: dodaj placeholder dla czasu usera, jeśli go nie ma
+             const timeElement = document.createElement('small');
+             timeElement.className = 'message-timestamp text-white-50 d-block text-end mt-1 is-placeholder'; // Dodaj klasę placeholder
+             timeElement.textContent = '...'; // Placeholder
+             messageBubble.appendChild(timeElement);
         }
         // -------------------------
 
@@ -69,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Fallback, jeśli struktura się zmieniła
             chatMessages.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
+        return messageBubble;
     }
 
     // Obsługa Enter w polu tekstowym
@@ -100,6 +108,10 @@ function submitMessage() {
         return;
     }
 
+    // --- KROK 1: DODAJ WIADOMOŚĆ UŻYTKOWNIKA (BEZ PRAWDZIWEGO CZASU) ---
+        // Dodajemy dymek od razu, ale przekazujemy null jako timestamp, lub placeholder '...'
+        const userBubble = addMessage('user', userMessageContent, null);
+
     const formData = new FormData(chatForm);
     // Logi FormData są OK
 
@@ -118,21 +130,31 @@ function submitMessage() {
         }
     })
     .then(response => {
-       // ... (obsługa błędów response.ok jak wcześniej) ...
-       return response.json();
+       if (!response.ok) {
+                 return response.json().then(errData => { throw new Error(errData.error_message || `Błąd: ${response.status}`); })
+                 .catch(() => response.text().then(text => { throw new Error(text || `Błąd: ${response.status}`); }));
+            }
+            return response.json();
     })
     .then(data => {
         console.log('Response from server:', data);
 
         if (data.status === 'success') {
             // --- DODAJ WIADOMOŚĆ UŻYTKOWNIKA (TERAZ!) ---
-            if (data.user_message) {
-                addMessage(
-                    data.user_message.role,
-                    data.user_message.content,
-                    data.user_message.timestamp // <-- Użyj timestampu z serwera
-                );
-            }
+            if (data.user_message && data.user_message.timestamp) {
+                    // Znajdź placeholder czasu w dodanym wcześniej dymku użytkownika
+                    const timePlaceholder = userBubble.querySelector('small.message-timestamp.is-placeholder');
+                    if (timePlaceholder) {
+                        timePlaceholder.textContent = data.user_message.timestamp;
+                        timePlaceholder.classList.remove('is-placeholder'); // Usuń klasę placeholder
+                    } else {
+                        // Jeśli nie było placeholdera, dodaj element czasu
+                        const timeElement = document.createElement('small');
+                        timeElement.className = 'message-timestamp text-white-50 d-block text-end mt-1';
+                        timeElement.textContent = data.user_message.timestamp;
+                        userBubble.appendChild(timeElement); // Dodaj do istniejącego dymka
+                    }
+                }
 
             // --- DODAJ WIADOMOŚĆ ASYSTENTA ---
             if (data.assistant_message) {
@@ -163,16 +185,14 @@ function submitMessage() {
         // addMessage('user', userMessageContent, 'Błąd wysłania'); // Prosty przykład
         errorMessage.textContent = 'Wystąpił błąd: ' + error.message;
         errorContainer.classList.remove('d-none');
+        if (userBubble) {
+                 userBubble.style.border = '2px solid red'; // Prosty przykład
+             }
     })
     .finally(() => {
         loadingSpinner.classList.add('d-none');
-        if(promptField) {
-            promptField.disabled = false;
-            promptField.focus();
-        }
-        if(submitBtn) {
-             submitBtn.disabled = false;
-        }
+            if(promptField) { promptField.disabled = false; promptField.focus(); }
+            if(submitBtn) { submitBtn.disabled = false; }
     });
 }
 

@@ -18,7 +18,8 @@ urlpatterns = [
     path('api/task/<int:task_id>/', api_task_details, name='api_task_details'),  # Szczegóły zadania API
 
     path('chat/', chat, name='chat'),
-    path('chat/<int:conversation_id>/', chat, name='chat_view_conversation'),
+    path('chat/<uuid:conversation_id>/', chat, name='chat_view_conversation'),
+    # path('chat/delete/<uuid:conversation_id>/', delete_conversation, name='delete_conversation'),
 
 ]
 

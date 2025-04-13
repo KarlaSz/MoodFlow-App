@@ -94,15 +94,12 @@ class Message(models.Model):
         editable=False
     )
 
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def get_formatted_timestamp(self):
-
+    def get_formatted_timestamp(self, format="%H:%M:%S"):
+        """Zwraca sformatowany czas lokalny."""
         local_time = timezone.localtime(self.timestamp)
-        # Formatuj jako HH:MM (24h)
-        return local_time.strftime('%H:%M:%S')
-        # Lub formatuj jako hh:mm am/pm (12h) - wybierz jeden!
-        # return local_time.strftime('%I:%M %p').lower() # np. 09:04 pm
+        # Używamy formatu przekazanego jako argument lub domyślnego "%H:%M:%S"
+        return local_time.strftime(format)
+
 
     class Meta:
         ordering = ['timestamp']
@@ -113,6 +110,3 @@ class Message(models.Model):
         return f"{self.get_role_display()} ({self.conversation_id}): {Truncator(self.content).chars(50)}"
 
         # Dodajmy metodę do formatowania czasu dla szablonu/API
-
-    def get_formatted_timestamp(self, format="%H:%M:%S"):
-        return self.timestamp.strftime(format)

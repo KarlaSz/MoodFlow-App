@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% load tz %}
+{% load humanize %} {# Załaduj humanize #}
 
 {% block title %}Chat - Twój Asystent{% endblock %}
 
@@ -16,42 +17,42 @@
                 <div class="sidebar-list-container flex-grow-1">
                     <ul class="list-unstyled chat-history-list">
 
-                        {# --- Link do rozpoczęcia NOWEJ rozmowy --- #}
-                        {# Jest aktywny, jeśli ŻADNA konkretna rozmowa nie jest załadowana #}
+                        {# Link do NOWEJ rozmowy #}
                         <li>
+                            {# Link jest aktywny, jeśli ŻADNA konkretna rozmowa nie jest załadowana (conversation to None) #}
                             <a href="{% url 'chat' %}"
                                class="{% if not conversation %}active bg-success{% endif %}">
                                 + Nowa Rozmowa
                             </a>
                         </li>
 
-                        {# --- Nagłówek dla historii (jeśli istnieje) --- #}
+                        {# Nagłówek dla historii #}
                         {% if conversation_history_list %}
                             <li class="mt-2 mb-1"><small class="text-muted">Poprzednie:</small></li>
                         {% endif %}
 
-                        {# --- Pętla po historii rozmów z widoku --- #}
+                        {# Pętla po historii rozmów #}
                         {% for conv in conversation_history_list %}
-                            {# Generuj URL do widoku tej konkretnej rozmowy #}
+                            {# Generuj URL do widoku TEJ konkretnej rozmowy #}
                             {% url 'chat_view_conversation' conversation_id=conv.id as conv_url %}
                             <li>
                                 {# Link do konkretnej rozmowy #}
-                                {# Jest aktywny, jeśli ID rozmowy z pętli zgadza się z ID aktualnie załadowanej rozmowy #}
+                                {# Link jest aktywny, jeśli ID załadowanej rozmowy pasuje do ID rozmowy z pętli #}
                                 <a href="{{ conv_url }}"
-                                   title="{{ conv.title|default:'Rozmowa bez tytułu' }}" {# Pełny tytuł w podpowiedzi #}
+                                   title="{{ conv.title|default:'Rozmowa bez tytułu' }} ({{ conv.created_at|naturalday }})"
                                    class="{% if conversation and conversation.id == conv.id %}active bg-success{% endif %}">
-                                     {# Wyświetl tytuł, użyj domyślnego jeśli pusty, skróć dla zwięzłości #}
+                                     {# Wyświetl tytuł #}
                                      {{ conv.title|default:"Rozmowa bez tytułu"|truncatechars:25 }}
+                                     {# Wyświetl datę #}
+                                     <small class="text-muted ms-2">({{ conv.created_at|naturalday }})</small>
                                 </a>
                             </li>
                         {% empty %}
-                             {# Komunikat, jeśli nie ma żadnych zapisanych rozmów (poza linkiem "Nowa Rozmowa") #}
-                             {# Możesz to zostawić puste lub dodać tekst #}
-                             {# <li><em class="text-muted small">Brak historii</em></li> #}
+                             {# Możesz dodać komunikat, jeśli chcesz #}
+                             {# <li><em class="text-muted small">Brak historii rozmów.</em></li> #}
                         {% endfor %}
                     </ul>
                 </div>
-                 {# Usunęliśmy stary przycisk "Nowa rozmowa", bo mamy link na górze listy #}
             </div>
         </div>
 
@@ -61,59 +62,65 @@
 
                 <h1 class="h4 text-dark mb-3 text-center">Twój Asystent Rozmowy</h1>
 
-                {# Wyświetlanie błędu z widoku #}
+                {# Wyświetlanie błędu #}
                 {% if error_message %}
                 <div id="error-container" class="alert alert-danger mb-3">
                     <p id="error-message" class="mb-0">{{ error_message }}</p>
                 </div>
                 {% else %}
+                 {# Ukryty kontener na błędy z JS #}
                  <div id="error-container" class="alert alert-danger d-none mb-3">
                     <p id="error-message" class="mb-0"></p>
                 </div>
                 {% endif %}
 
-
+                {# Kontener na wiadomości #}
                 <div id="chat-container" class="flex-grow-1 overflow-auto mb-3 chat-messages-container">
                     <div id="chat-messages">
-                        {# === WYŚWIETLANIE WIADOMOŚCI Z BAZY (przy ładowaniu strony) === #}
+                        {# Wyświetlanie wiadomości załadowanych z serwera (dla GET) #}
                         {% if messages %}
                             {% for message in messages %}
-                                <div class="message-bubble bg-{% if message.role == 'user' %}success{% else %}dark{% endif %}">
+                                <div class="message-bubble bg-{% if message.role == 'user' %}success{% else %}dark{% endif %} text-white mb-2 p-2 rounded"> {# Dodano klasy dla wyglądu #}
                                     <div class="chat-text">
                                         <strong>{% if message.role == 'user' %}Ty{% else %}ChatGPT{% endif %}:</strong><br>
-                                        {# Bezpieczne wyświetlanie treści - zakładamy, że jest już OK lub użyj {{ message.content|safe }} jeśli ufasz źródłu #}
+                                        {# Używamy safe, jeśli ufasz treści z OpenAI lub ją oczyścisz #}
+                                        {# Rozważ użycie filtra markdown, jeśli chcesz formatować tekst #}
                                         {{ message.content|safe }}
                                     </div>
-                                     {# === DODANIE CZASU === #}
                                     <small class="message-timestamp text-white-50 d-block text-end mt-1">
-                                         {# Użyj filtra |date lub |time, albo metody z modelu #}
-                                         {# {{ message.timestamp|localtime|time:"H:i:s" }} #}
                                          {{ message.get_formatted_timestamp }}
                                     </small>
-                                     {# ===================== #}
                                 </div>
                             {% endfor %}
                          {% else %}
-                             <div class="text-center text-muted p-4">Rozpocznij rozmowę wpisując wiadomość poniżej.</div>
+                             {# Komunikat tylko gdy NIE ma wiadomości do wyświetlenia #}
+                             <div class="text-center text-muted p-4">
+                                {% if conversation %}
+                                    Wygląda na to, że ta rozmowa nie ma jeszcze wiadomości.
+                                {% else %}
+                                    Rozpocznij nową rozmowę wpisując wiadomość poniżej lub wybierz istniejącą z historii.
+                                {% endif %}
+                             </div>
                          {% endif %}
                          {# Wiadomości dodawane przez JS pojawią się tutaj #}
                     </div>
                 </div>
 
-                {# Obszar formularza wejściowego - pozostaje na dole #}
+                {# Formularz wejściowy #}
                 <div class="mt-auto chat-input-area">
+                     {# Spinner ładowania #}
                      <div class="text-center my-2 d-none" id="loadingSpinner">
                          <button class="btn btn-warning btn-sm" type="button" disabled>
                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                             Czekaj odpowiadam...
+                             Czekaj, odpowiadam...
                          </button>
                      </div>
 
-                    <form id="chatForm" method="POST"> {# method="POST" jest ważny #}
+                    {# Formularz #}
+                    <form id="chatForm" method="POST" action="{{ request.path }}"> {# Wysyłaj na bieżący URL #}
                         {% csrf_token %}
-                        {# Usunęliśmy hidden input conversation_history #}
                         <div class="input-group">
-                             {{ form.prompt }} {# Zakładamy, że form ma pole 'prompt' #}
+                             {{ form.prompt }} {# Pole tekstowe z formularza Django #}
                              <button type="submit" class="btn btn-success" id="submitBtn">
                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
                                       <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.001.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
@@ -126,12 +133,12 @@
 
             </div>
         </div>
-
     </div>
 </div>
 
-<!-- JavaScript -->
+<!-- JavaScript (bez zmian w stosunku do Twojej ostatniej wersji) -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{# Upewnij się, że ścieżka do chat.js jest poprawna #}
 <script src="{% static 'js/chat.js' %}"></script>
 
 {% endblock %}
