@@ -9,6 +9,8 @@ from openai import OpenAI
 import json
 from .forms import ChatForm
 import requests #for API wather conection
+from bs4 import BeautifulSoup
+from datetime import datetime
 
 
 def home(request):
@@ -203,12 +205,12 @@ def toggle_done(request, task_id):
 
 
 def get_api_key():
-    """Pobiera klucz API z pliku openai_key.txt"""
+    """Pobiera klucz API z pliku .env.txt"""
     try:
-        with open('./openai_key.txt', 'r') as f:
+        with open('./.env.txt', 'r') as f:
             return f.read().strip()
     except FileNotFoundError:
-        print("Błąd: Plik openai_key.txt nie został znaleziony.")
+        print("Błąd: Plik .env.txt nie został znaleziony.")
         return None
     except Exception as e:
         print(f"Błąd odczytu pliku z kluczem API: {str(e)}")
