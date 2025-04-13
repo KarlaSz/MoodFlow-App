@@ -45,74 +45,286 @@
     opacity: 1;
 }
 
-/* -- Animacje ikon pogody -- */
+/*!* -- Animacje ikon pogody -- *!*/
 
-/* Słońce - np. lekkie obracanie lub pulsowanie */
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-.weather-animate-sun i {
-    animation: spin 20s linear infinite; /* Wolny obrót */
-    color: #ffc107; /* Żółty */
-}
-.weather-animate-sun-cloud i.bi-cloud-sun {
-     /* Można animować tylko część ikony lub całą lekko */
-     animation: pulse 3s ease-in-out infinite;
-     color: #ffc107; /* Lub mieszany kolor */
+/*!* Słońce - np. lekkie obracanie lub pulsowanie *!*/
+/*@keyframes spin {*/
+/*    from { transform: rotate(0deg); }*/
+/*    to { transform: rotate(360deg); }*/
+/*}*/
+/*@keyframes pulse {*/
+/*    0%, 100% { transform: scale(1); }*/
+/*    50% { transform: scale(1.1); }*/
+/*}*/
+/*.weather-animate-sun i {*/
+/*    animation: spin 20s linear infinite; !* Wolny obrót *!*/
+/*    color: #ffc107; !* Żółty *!*/
+/*}*/
+/*.weather-animate-sun-cloud i.bi-cloud-sun {*/
+/*     !* Można animować tylko część ikony lub całą lekko *!*/
+/*     animation: pulse 3s ease-in-out infinite;*/
+/*     color: #ffc107; !* Lub mieszany kolor *!*/
+/*}*/
+
+/*!* Deszcz - np. animacja kropli (trudniejsze w czystym CSS na ikonie fontowej) *!*/
+/*!* Prostsza opcja: lekkie kołysanie *!*/
+/* @keyframes sway {*/
+/*    0%, 100% { transform: rotate(-2deg); }*/
+/*    50% { transform: rotate(2deg); }*/
+/*}*/
+/*.weather-animate-rain i {*/
+/*    animation: sway 1.5s ease-in-out infinite;*/
+/*    color: #6c757d; !* Szary/niebieski *!*/
+/*}*/
+
+/*!* Śnieg - np. lekkie drżenie *!*/
+/*@keyframes shake {*/
+/*  0% { transform: translate(1px, 1px) rotate(0deg); }*/
+/*  10% { transform: translate(-1px, -2px) rotate(-1deg); }*/
+/*  !* ... więcej kroków dla bardziej złożonego drżenia ... *!*/
+/*  100% { transform: translate(1px, -2px) rotate(-1deg); }*/
+/*}*/
+/* .weather-animate-snow i, .weather-animate-cold i {*/
+/*    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both infinite;*/
+/*    transform: translate3d(0, 0, 0);*/
+/*    backface-visibility: hidden;*/
+/*    perspective: 1000px;*/
+/*    color: #0dcaf0; !* Jasnoniebieski *!*/
+/* }*/
+
+/* !* Wiatr - np. szybkie przesuwanie w bok *!*/
+/* @keyframes wind-blow {*/
+/*     0%, 100% { transform: translateX(0); }*/
+/*     50% { transform: translateX(5px); }*/
+/* }*/
+/* .weather-animate-wind i {*/
+/*     animation: wind-blow 0.5s ease-in-out infinite;*/
+/*     color: #adb5bd; !* Jasnoszary *!*/
+/* }*/
+
+/* !* Chmura - np. lekkie unoszenie *!*/
+/* @keyframes float {*/
+/*     0%, 100% { transform: translateY(0); }*/
+/*     50% { transform: translateY(-3px); }*/
+/* }*/
+/* .weather-animate-cloud i {*/
+/*     animation: float 4s ease-in-out infinite;*/
+/*     color: #adb5bd; !* Jasnoszary *!*/
+/* }*/
+
+/*!* Upewnij się, że animacje nie psują wyglądu *!*/
+/*[class^="bi-"].weather-animate- {*/
+/*    display: inline-block; !* Potrzebne dla transformacji *!*/
+/*}*/
+
+.chat-layout-row {
+    height: calc(100vh - 80px);
+    min-height: 600px;
+    max-height: 95vh;
 }
 
-/* Deszcz - np. animacja kropli (trudniejsze w czystym CSS na ikonie fontowej) */
-/* Prostsza opcja: lekkie kołysanie */
- @keyframes sway {
-    0%, 100% { transform: rotate(-2deg); }
-    50% { transform: rotate(2deg); }
+/* Kolumny muszą mieć wysokość, by flexbox wewnątrz działał */
+.chat-layout-row > .col-lg-3,
+.chat-layout-row > .col-md-4,
+.chat-layout-row > .col-lg-9,
+.chat-layout-row > .col-md-8 {
+    height: 100%;
+    padding-top: 0.5rem; /* Mały odstęp od góry */
+    padding-bottom: 0.5rem; /* Mały odstęp od dołu */
 }
-.weather-animate-rain i {
-    animation: sway 1.5s ease-in-out infinite;
-    color: #6c757d; /* Szary/niebieski */
+
+/* --- Sidebar Styles (Przywracamy/Poprawiamy) --- */
+#chat-sidebar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff; /* Białe tło */
+    border-right: 1px solid #e9ecef;
+    padding: 1rem;
+    border-radius: .375rem; /* Zaokrąglenie Bootstrap */
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); /* Cień Bootstrap */
+    /* Usunięte overflow - overflow jest na wewnętrznym elemencie */
+}
+#chat-sidebar h5 {
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-bottom: 0.75rem; /* Dopasowany margines */
+}
+#chat-sidebar hr {
+    flex-shrink: 0;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+/* Kontener listy w sidebarze */
+#chat-sidebar .sidebar-list-container {
+    flex-grow: 1; /* Zajmuje dostępną przestrzeń */
+    overflow-y: auto; /* Scroll tylko dla listy */
+    margin-bottom: 1rem; /* Odstęp od przycisku */
+}
+.chat-history-list { /* Styl samej listy */
+    list-style: none;
+    padding-left: 0;
+}
+.chat-history-list li a {
+    display: block;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.chat-history-list li a:hover {
+    background-color: #e9ecef;
+    color: #000;
+}
+.chat-history-list li a.active {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 500;
+}
+#chat-sidebar .btn {
+    margin-top: auto; /* Wypycha na dół */
+    flex-shrink: 0;
 }
 
-/* Śnieg - np. lekkie drżenie */
-@keyframes shake {
-  0% { transform: translate(1px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-  /* ... więcej kroków dla bardziej złożonego drżenia ... */
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
+/* --- Główny Obszar Czatu (Zachowujemy działające) --- */
+#main-chat-area {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa; /* Jaśniejsze tło głównego obszaru */
+    padding: 1rem;
+    border-radius: .375rem;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+    overflow: hidden; /* WAŻNE */
 }
- .weather-animate-snow i, .weather-animate-cold i {
-    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both infinite;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-    color: #0dcaf0; /* Jasnoniebieski */
- }
+#main-chat-area h1 { flex-shrink: 0; margin-bottom: 1rem; font-size: 1.25rem; text-align: center; }
+#error-container { flex-shrink: 0; }
 
- /* Wiatr - np. szybkie przesuwanie w bok */
- @keyframes wind-blow {
-     0%, 100% { transform: translateX(0); }
-     50% { transform: translateX(5px); }
- }
- .weather-animate-wind i {
-     animation: wind-blow 0.5s ease-in-out infinite;
-     color: #adb5bd; /* Jasnoszary */
- }
+/* KONTENER WIADOMOŚCI (Zachowujemy działający scroll) */
+#chat-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #ffffff; /* Białe tło dla wiadomości */
+    border-radius: .25rem;
+    border: 1px solid #dee2e6;
+}
+#chat-messages { /* Wewnętrzny kontener */
+   padding-bottom: 1px; /* Mały trik, by floaty nie zapadały marginesów rodzica */
+}
 
- /* Chmura - np. lekkie unoszenie */
- @keyframes float {
-     0%, 100% { transform: translateY(0); }
-     50% { transform: translateY(-3px); }
- }
- .weather-animate-cloud i {
-     animation: float 4s ease-in-out infinite;
-     color: #adb5bd; /* Jasnoszary */
- }
+/* --- Chat Bubble Styles (POWRÓT DO DYMKÓW + Twoje kolory) --- */
+.message-bubble {
+    max-width: 80%;
+    margin-bottom: 0.75rem;
+    padding: 0.7rem 1.1rem; /* Dopasowany padding */
+    border-radius: 18px; /* Zaokrąglenie dymków */
+    word-wrap: break-word;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); /* Trochę mocniejszy cień */
+    position: relative;
+    clear: both; /* Zapobiega nachodzeniu dymków */
+    /* Animacja */
+    opacity: 0;
+    transform: translateY(10px);
+    animation: slideUpFadeIn 0.4s ease-out forwards;
+}
 
-/* Upewnij się, że animacje nie psują wyglądu */
-[class^="bi-"].weather-animate- {
-    display: inline-block; /* Potrzebne dla transformacji */
+@keyframes slideUpFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Wiadomość użytkownika (Twoja zielona) */
+.message-bubble.bg-success {
+    float: right;
+    margin-left: auto;
+    margin-right: 5px; /* Mały odstęp od prawej krawędzi */
+    background-color: #198754; /* Twój zielony */
+    color: white;
+    border-bottom-right-radius: 5px; /* "Ogonek" */
+}
+
+/* Wiadomość asystenta (Twoja ciemna) */
+.message-bubble.bg-dark {
+    float: left;
+    margin-right: auto;
+    margin-left: 5px; /* Mały odstęp od lewej krawędzi */
+    background-color: #212529; /* Twój ciemny */
+    color: white;
+    border-bottom-left-radius: 5px; /* "Ogonek" */
+}
+
+/* Tekst wewnątrz dymka */
+.chat-text {
+    white-space: pre-wrap;
+    line-height: 1.45;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.chat-text strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    opacity: 0.8; /* Lekko przygaszona etykieta */
+    color: inherit; /* Dziedziczy kolor z rodzica (.message-bubble) */
+}
+
+
+/* --- Input Area (Bez większych zmian) --- */
+.chat-input-area {
+  flex-shrink: 0;
+  padding-top: 1rem;
+  margin-top: auto;
+  /* Usunięto border-top, bo tło obszaru jest inne */
+}
+#chatForm { display: flex; }
+#chatForm textarea#id_prompt,
+#chatForm input#id_prompt[type="text"] {
+    flex-grow: 1;
+    resize: none;
+    min-height: 42px; /* Dopasowana wysokość */
+    max-height: 120px;
+    overflow-y: auto;
+    border: 1px solid #ced4da;
+    border-right: none;
+    box-shadow: none !important;
+    border-radius: 20px 0 0 20px;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+}
+#chatForm button#submitBtn {
+   border-radius: 0 20px 20px 0;
+   min-height: 42px;
+   flex-shrink: 0;
+   background-color: #0d6efd;
+   border: 1px solid #0d6efd;
+   color: white;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 0 1rem;
+   cursor: pointer;
+   transition: background-color 0.2s ease;
+}
+#chatForm button#submitBtn:hover { background-color: #0b5ed7; border-color: #0a58ca; }
+#chatForm button#submitBtn svg { margin-right: 0.5rem; }
+
+/* --- Responsywność (Bez większych zmian) --- */
+@media (max-width: 767.98px) {
+    .chat-layout-row { height: auto; min-height: 85vh; }
+    .chat-layout-row > .col-lg-9, .chat-layout-row > .col-md-8 { height: auto; }
+    #main-chat-area { height: calc(100vh - 200px); min-height: 400px; }
+    #chat-sidebar { height: auto; max-height: 180px; min-height: auto; margin-bottom: 1rem; }
+    .message-bubble { max-width: 90%; }
 }

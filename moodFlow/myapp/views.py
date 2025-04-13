@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-# from django.contrib import messages
 from django.views.decorators.http import require_POST
 from .models import Task
 from .forms import TaskForm
@@ -9,8 +8,7 @@ from openai import OpenAI
 import json
 from .forms import ChatForm
 import requests #for API wather conection
-from bs4 import BeautifulSoup
-from datetime import datetime
+
 
 
 def home(request):
