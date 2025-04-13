@@ -19,8 +19,7 @@ urlpatterns = [
 
     path('chat/', chat, name='chat'),
     path('chat/<uuid:conversation_id>/', chat, name='chat_view_conversation'),
-    # Widok z konkretnym ID (do wczytania z historii)
-    path('chat/history/', chat_history, name='chat_history'),  # Widok listy historii
+    path('chat/history/', chat_history, name='chat_history'),
 
 ]
 

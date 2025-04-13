@@ -329,7 +329,6 @@ def chat(request, conversation_id=None): # Dodajemy opcjonalny conversation_id z
         form = ChatForm(request.POST)
         if form.is_valid():
             user_prompt = form.cleaned_data["prompt"]
-            # Nie używamy już 'conversation_history' z formularza
 
             # --- Znajdź lub stwórz konwersację ---
             session_conversation_id = request.session.get('conversation_id')
@@ -347,7 +346,7 @@ def chat(request, conversation_id=None): # Dodajemy opcjonalny conversation_id z
                 request.session['conversation_id'] = str(current_conversation.id)
                 request.session.save()
 
-            # --- Automatyczne ustawienie tytułu konwersacji (jeśli jeszcze go nie ma) ---
+            # --- Automatyczne ustawienie tytułu konwersacji  ---
             if not current_conversation.title and user_prompt:
                  current_conversation.title = Truncator(user_prompt).chars(80) # Skróć pierwszy prompt
                  current_conversation.save()

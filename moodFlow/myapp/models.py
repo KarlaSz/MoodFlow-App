@@ -93,6 +93,17 @@ class Message(models.Model):
         default=timezone.now,
         editable=False
     )
+
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def get_formatted_timestamp(self):
+
+        local_time = timezone.localtime(self.timestamp)
+        # Formatuj jako HH:MM (24h)
+        return local_time.strftime('%H:%M:%S')
+        # Lub formatuj jako hh:mm am/pm (12h) - wybierz jeden!
+        # return local_time.strftime('%I:%M %p').lower() # np. 09:04 pm
+
     class Meta:
         ordering = ['timestamp']
         verbose_name = "Wiadomość"
@@ -103,5 +114,5 @@ class Message(models.Model):
 
         # Dodajmy metodę do formatowania czasu dla szablonu/API
 
-    def get_formatted_timestamp(self, format="%H:%M"):
+    def get_formatted_timestamp(self, format="%H:%M:%S"):
         return self.timestamp.strftime(format)

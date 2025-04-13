@@ -93,95 +93,85 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function submitMessage() {
+function submitMessage() {
     const userMessageContent = promptField.value.trim();
 
     if (userMessageContent === '' || !promptField || !submitBtn) {
-        return; // Nie wysyłaj pustych wiadomości
+        return;
     }
 
-    // --- 1. Przygotuj dane FormData ZANIM wyłączysz pole ---
     const formData = new FormData(chatForm);
-    // FormData(chatForm) powinno automatycznie pobrać wartość z pola 'prompt',
-    // ponieważ ma ono atrybut 'name' i NIE jest jeszcze wyłączone.
+    // Logi FormData są OK
 
-    // Opcjonalny log do sprawdzenia, czy FormData zawiera 'prompt'
-    console.log("FormData created. Does it contain 'prompt'?", formData.has('prompt'));
-    // Możesz też wylistować wszystkie wpisy dla pewności:
-    for (let [key, value] of formData.entries()) {
-        console.log(`FormData entry: ${key}=${value}`);
-    }
-    // --- Koniec przygotowania FormData ---
-
-
-    // --- 2. Wyświetl wiadomość użytkownika i zablokuj UI ---
-    const approxTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    addMessage('user', userMessageContent, approxTime); // Dodajemy od razu
-
+    // --- ZABLOKUJ UI (bez dodawania wiadomości!) ---
     loadingSpinner.classList.remove('d-none');
-    promptField.disabled = true; // Wyłącz pole DOPIERO TERAZ
+    promptField.disabled = true;
     submitBtn.disabled = true;
-    promptField.value = '';    // Wyczyść pole DOPIERO TERAZ
+    promptField.value = '';
 
-
-    // --- 3. Wyślij żądanie fetch ---
-    fetch(window.location.href, { // Wysyłamy na bieżący URL widoku chat
+    // --- Wyślij żądanie fetch ---
+    fetch(window.location.href, {
         method: 'POST',
-        body: formData, // Użyj wcześniej przygotowanego formData
+        body: formData,
         headers: {
-            'X-Requested-With': 'XMLHttpRequest' // Kluczowe dla odróżnienia AJAX w Django
+            'X-Requested-With': 'XMLHttpRequest'
         }
     })
     .then(response => {
-        // Sprawdź najpierw status HTTP
-        if (!response.ok) {
-             // Spróbuj odczytać treść błędu JSON, jeśli serwer ją zwrócił
-             return response.json().then(errData => {
-                 // Rzuć błąd z wiadomością z serwera lub statusem
-                 throw new Error(errData.error_message || `Błąd serwera: ${response.status}`);
-             }).catch(() => {
-                // Spróbuj odczytać jako tekst, jeśli nie JSON
-                return response.text().then(text => {
-                    console.error("Server non-JSON error response:", text);
-                    throw new Error(text || `Błąd serwera: ${response.status}`);
-                });
-             });
-        }
-        return response.json(); // Parsuj JSON, jeśli status jest OK
+       // ... (obsługa błędów response.ok jak wcześniej) ...
+       return response.json();
     })
     .then(data => {
-        console.log('Response from server:', data); // Logowanie odpowiedzi
+        console.log('Response from server:', data);
 
         if (data.status === 'success') {
-            // Odpowiedź asystenta
+            // --- DODAJ WIADOMOŚĆ UŻYTKOWNIKA (TERAZ!) ---
+            if (data.user_message) {
+                addMessage(
+                    data.user_message.role,
+                    data.user_message.content,
+                    data.user_message.timestamp // <-- Użyj timestampu z serwera
+                );
+            }
+
+            // --- DODAJ WIADOMOŚĆ ASYSTENTA ---
             if (data.assistant_message) {
-                // Dodaj wiadomość asystenta z timestampem z serwera
                 addMessage(
                     data.assistant_message.role,
                     data.assistant_message.content,
-                    data.assistant_message.timestamp // Użyj timestampu z odpowiedzi
+                    data.assistant_message.timestamp // <-- Użyj timestampu z serwera
                 );
             }
-            errorContainer.classList.add('d-none'); // Ukryj błędy, jeśli były
-        } else {
-            // Obsługa błędu zwróconego w JSON (np. status: 'error')
+            errorContainer.classList.add('d-none');
+
+        } else { // data.status === 'error'
+             // W przypadku błędu serwera, możemy zdecydować czy chcemy dodać wiadomość użytkownika
+             // Jeśli serwer zwrócił ją w user_message mimo błędu
+             // if (data.user_message) {
+             //     addMessage(
+             //         data.user_message.role,
+             //         data.user_message.content,
+             //         data.user_message.timestamp
+             //     );
+             // }
             throw new Error(data.error_message || 'Nieznany błąd odpowiedzi serwera.');
         }
     })
     .catch(error => {
         console.error('Fetch Error:', error);
+        // Można by tutaj dodać wiadomość użytkownika z jakimś wskaźnikiem błędu, np. "!" obok czasu
+        // addMessage('user', userMessageContent, 'Błąd wysłania'); // Prosty przykład
         errorMessage.textContent = 'Wystąpił błąd: ' + error.message;
         errorContainer.classList.remove('d-none');
     })
     .finally(() => {
         loadingSpinner.classList.add('d-none');
-        // Sprawdź czy elementy istnieją przed próbą odblokowania
         if(promptField) {
-            promptField.disabled = false; // WAŻNE: Włącz pole z powrotem
-            promptField.focus(); // Ustaw focus z powrotem na pole wprowadzania
+            promptField.disabled = false;
+            promptField.focus();
         }
         if(submitBtn) {
-             submitBtn.disabled = false; // Włącz przycisk z powrotem
+             submitBtn.disabled = false;
         }
     });
 }

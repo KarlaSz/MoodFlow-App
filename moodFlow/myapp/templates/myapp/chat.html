@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% load tz %} {# Dodaj to do obsługi stref czasowych, jeśli potrzebujesz #}
+{% load tz %}
 
 {% block title %}Chat - Twój Asystent{% endblock %}
 
@@ -19,7 +19,7 @@
                         {# Przykład statyczny: #}
                         {# Zakładając, że masz URL o nazwie 'chat' przyjmujący conversation_id #}
                         {% if conversation and conversation.id %}
-                            <li><a href="{% url 'chat_view_conversation' conversation_id=conversation.id %}" class="active">Aktualna Rozmowa</a></li>
+                            <li><a href="{% url 'chat_view_conversation' conversation_id=conversation.id %}" class="active bg-success">Aktualna Rozmowa</a></li>
                         {% else %}
                              <li><a href="{% url 'chat' %}" class="active bg-success">Nowa Rozmowa</a></li>
                         {% endif %}
@@ -27,8 +27,6 @@
                         {# {% for conv in recent_conversations %} #}
                         {#   <li><a href="{% url 'chat' conversation_id=conv.id %}">{{ conv.title|default:"Rozmowa bez tytułu" }}</a></li> #}
                         {# {% endfor %} #}
-                         <li><a href="#">Inna rozmowa 1</a></li>
-                         <li><a href="#">Inna rozmowa 2</a></li>
                     </ul>
                 </div>
                  <a href="{% url 'chat' %}" class="btn btn-outline-secondary btn-sm mt-auto"> {# Link do rozpoczęcia nowej rozmowy #}
@@ -69,7 +67,7 @@
                                      {# === DODANIE CZASU === #}
                                     <small class="message-timestamp text-white-50 d-block text-end mt-1">
                                          {# Użyj filtra |date lub |time, albo metody z modelu #}
-                                         {# {{ message.timestamp|time:"H:i" }} #}
+                                         {# {{ message.timestamp|localtime|time:"H:i:s" }} #}
                                          {{ message.get_formatted_timestamp }}
                                     </small>
                                      {# ===================== #}
