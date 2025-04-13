@@ -18,7 +18,7 @@
                     <div class="sidebar-list-container flex-grow-1">
                         <ul class="list-unstyled chat-history-list">
                             {# --- Elementy listy historii --- #}
-                            <li><a href="#" class="active">Rozmowa z dzisiaj</a></li>
+                            <li><a href="#" class="active bg-success">Rozmowa z dzisiaj</a></li>
                             <li><a href="#">Przepis na pizzę</a></li>
                             <li><a href="#">Pomysły na wakacje</a></li>
                             <li><a href="#">Python - podstawy</a></li>
@@ -54,7 +54,8 @@
                             {% for message in messages %}
                                 {# Pomiń ewentualny pierwszy pusty message systemowy jeśli go masz #}
                                 {% if message.role %}
-                                    <div class="message-bubble alert bg-{% if message.role == 'user' %}success{% else %}dark{% endif %}">
+                                    {# ===>>> KLUCZOWA ZMIANA: Usunięto klasę 'alert' <<<=== #}
+                                    <div class="message-bubble bg-{% if message.role == 'user' %}success{% else %}dark{% endif %}">
                                         <div class="chat-text"> {# Użyj DIV zamiast P dla bezpieczeństwa zagnieżdżania #}
                                             <strong>{% if message.role == 'user' %}Ty{% else %}ChatGPT{% endif %}:</strong><br>
                                             {# Zakładamy, że treść jest już sparsowana przez JS lub bezpieczna #}

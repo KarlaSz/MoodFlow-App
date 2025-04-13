@@ -220,17 +220,17 @@
    padding-bottom: 1px; /* Mały trik, by floaty nie zapadały marginesów rodzica */
 }
 
-/* --- Chat Bubble Styles (POWRÓT DO DYMKÓW + Twoje kolory) --- */
+/* --- Chat Bubble Styles  --- */
 .message-bubble {
-    max-width: 80%;
+    max-width: 80%; /* Możesz dostosować */
     margin-bottom: 0.75rem;
-    padding: 0.7rem 1.1rem; /* Dopasowany padding */
-    border-radius: 18px; /* Zaokrąglenie dymków */
+    /* ===>>> ZMIENIONY PADDING <<<=== */
+    padding: 0.5rem 0.8rem; /* Zmniejszony padding (dostosuj wg uznania) */
+    border-radius: 15px; /* Możesz lekko zmienić zaokrąglenie */
     word-wrap: break-word;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); /* Trochę mocniejszy cień */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Lżejszy cień może wyglądać lepiej */
     position: relative;
-    clear: both; /* Zapobiega nachodzeniu dymków */
-    /* Animacja */
+    clear: both;
     opacity: 0;
     transform: translateY(10px);
     animation: slideUpFadeIn 0.4s ease-out forwards;
@@ -247,20 +247,20 @@
 .message-bubble.bg-success {
     float: right;
     margin-left: auto;
-    margin-right: 5px; /* Mały odstęp od prawej krawędzi */
+    margin-right: 5px;
     background-color: #198754; /* Twój zielony */
     color: white;
-    border-bottom-right-radius: 5px; /* "Ogonek" */
+    border-bottom-right-radius: 5px; /* Ogonek */
 }
 
 /* Wiadomość asystenta (Twoja ciemna) */
 .message-bubble.bg-dark {
     float: left;
     margin-right: auto;
-    margin-left: 5px; /* Mały odstęp od lewej krawędzi */
+    margin-left: 5px;
     background-color: #212529; /* Twój ciemny */
     color: white;
-    border-bottom-left-radius: 5px; /* "Ogonek" */
+    border-bottom-left-radius: 5px; /* Ogonek */
 }
 
 /* Tekst wewnątrz dymka */
@@ -307,18 +307,14 @@
    border-radius: 0 20px 20px 0;
    min-height: 42px;
    flex-shrink: 0;
-   background-color: #0d6efd;
-   border: 1px solid #0d6efd;
-   color: white;
    display: flex;
    align-items: center;
    justify-content: center;
    padding: 0 1rem;
    cursor: pointer;
-   transition: background-color 0.2s ease;
+   transition: background-color 0.2s ease, border-color 0.2s ease;
+    svg { margin-right: 0.5rem; }
 }
-#chatForm button#submitBtn:hover { background-color: #0b5ed7; border-color: #0a58ca; }
-#chatForm button#submitBtn svg { margin-right: 0.5rem; }
 
 /* --- Responsywność (Bez większych zmian) --- */
 @media (max-width: 767.98px) {
