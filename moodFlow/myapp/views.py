@@ -168,6 +168,7 @@ def toggle_done(request, task_id):
     """Zmiana statusu zadania"""
     task = get_object_or_404(Task, id=task_id)
     task.status = "completed" if task.status != "completed" else "pending"
+    task.done_at = timezone.now()
     task.save()
     return redirect("todo_list")
 

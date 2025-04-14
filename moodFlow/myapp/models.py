@@ -31,6 +31,7 @@ class Task(models.Model):
     status = models.CharField(choices=IDEA_STATUS, max_length=30, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
+    done_at = models.DateTimeField(null=True, blank=True)
 
 
     def __str__(self):
