@@ -66,7 +66,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request', # standardowy
-                'myapp.context_processors.global_context', #date footer
+                'myapp.context_processors.global_context', #date footer, custom procesor
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
