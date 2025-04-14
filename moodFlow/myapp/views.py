@@ -9,8 +9,13 @@ import json
 from .forms import ChatForm
 import requests #for API wather conection
 from django.utils.text import Truncator
+from datetime import datetime
 
-
+#for footer
+def global_context(request):
+    return {
+        'year': datetime.now().year
+    }
 
 def home(request):
     """Strona główna - ogolna interakcja"""
