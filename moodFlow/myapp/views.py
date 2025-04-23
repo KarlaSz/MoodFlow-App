@@ -5,6 +5,7 @@ from .models import Task, Conversation, Message
 from .forms import TaskForm, ChatForm
 from django.utils import timezone
 from openai import OpenAI
+from serpapi import GoogleSearch
 import json
 from .forms import ChatForm
 import requests #for API wather conection
@@ -209,19 +210,75 @@ def toggle_done(request, task_id):
     return redirect('todo_list')  # wraca na główną listę
 
 
-def get_api_key():
-    """Pobiera klucz API z pliku .env.txt"""
+# def get_api_key():
+#     """Pobiera klucz API z pliku .env.txt"""
+#     try:
+#         with open('./.env.txt', 'r') as f:
+#             return f.read().strip()
+#     except FileNotFoundError:
+#         print("Błąd: Plik .env.txt nie został znaleziony.")
+#         return None
+#     except Exception as e:
+#         print(f"Błąd odczytu pliku z kluczem API: {str(e)}")
+#         return None
+
+
+def get_api_keys():
+    """Pobiera klucze API z pliku .env.txt"""
+    keys = {}
     try:
         with open('./.env.txt', 'r') as f:
-            return f.read().strip()
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    key_name, key_value = line.split('=', 1)
+                    keys[key_name.strip()] = key_value.strip()
     except FileNotFoundError:
-        print("Błąd: Plik .env.txt nie został znaleziony.")
-        return None
+        print("OSTRZEŻENIE: Plik .env.txt nie został znaleziony.")
     except Exception as e:
-        print(f"Błąd odczytu pliku z kluczem API: {str(e)}")
-        return None
+        print(f"Błąd odczytu pliku z kluczami API: {str(e)}")
+    return keys.get('OPENAI_API_KEY'), keys.get('SERPAPI_API_KEY')
+
+# zdublowane funkcje keys
+# def get_openai_api_key():
+#     """Pobiera klucz API OpenAI z pliku .env.txt"""
+#     try:
+#         keys = {}
+#         with open('./.env.txt', 'r') as f:
+#             for line in f:
+#                 line = line.strip()
+#                 if line and not line.startswith('#'):
+#                     key_name, key_value = line.split('=', 1)
+#                     keys[key_name.strip()] = key_value.strip()
+#         return keys.get('OPENAI_API_KEY') # Zwraca klucz OpenAI lub None
+#     except FileNotFoundError:
+#         print("Błąd: Plik .env.txt nie został znaleziony.")
+#         return None
+#     except Exception as e:
+#         print(f"Błąd odczytu pliku z kluczami API: {str(e)}")
+#         return None
+#
+# def get_serpapi_key():
+#     """Pobiera klucz API SerpApi z pliku .env.txt"""
+#     try:
+#         keys = {}
+#         with open('./.env.txt', 'r') as f:
+#             for line in f:
+#                 line = line.strip()
+#                 if line and not line.startswith('#'): # Ignoruj puste linie i komentarze
+#                     key_name, key_value = line.split('=', 1)
+#                     keys[key_name.strip()] = key_value.strip()
+#         return keys.get('SERPAPI_API_KEY') # Zwraca klucz SerpApi lub None
+#     except FileNotFoundError:
+#         print("Błąd: Plik .env.txt nie został znaleziony.")
+#         return None
+#     except Exception as e:
+#         print(f"Błąd odczytu pliku z kluczami API: {str(e)}")
+#         return None
 
 
+
+#
 # def chat(request):
 #     # preprompt = """Jesteś asystentem mojej firmy Karo. Masz za zadanie odpowiadać klientom na temat naszych produktów.
 #     #     FIRMA ZAJMUJE SIĘ:
@@ -302,7 +359,7 @@ def get_api_key():
 #                    "assistant_response": assistant_response, "response": response, "messages": messages})
 
 def chat(request, conversation_id=None):
-    api_key = get_api_key()
+    openai_api_key, serpapi_api_key = get_api_keys()
     error_message = None
     model = "gpt-4o" # lub gpt-3.5-turbo
     form = ChatForm()
@@ -312,8 +369,15 @@ def chat(request, conversation_id=None):
     # Zawsze pobieraj historię dla sidebara
     conversation_history_list = Conversation.objects.all() # Używa domyślnego sortowania z Meta
 
-    if not api_key:
-        error_message = "Błędna konfiguracja aplikacji (brak klucza API)."
+    # if not api_key:
+    #     error_message = "Błędna konfiguracja aplikacji (brak klucza API)."
+
+    if not openai_api_key:
+        error_message = "Błędna konfiguracja aplikacji (brak klucza API OpenAI)."
+        # Dodajemy ostrzeżenie, jeśli brakuje klucza SerpApi, ale nie blokujemy całkowicie
+    if not serpapi_api_key:
+        print("OSTRZEŻENIE: Brak klucza API SerpApi. Wyszukiwanie w Google będzie niedostępne.")
+        # Możesz dodać error_message = "..." jeśli chcesz to pokazać użytkownikowi
 
     # --- Obsługa GET ---
     if request.method == 'GET':
@@ -349,13 +413,23 @@ def chat(request, conversation_id=None):
 
     # --- Obsługa POST ---
     elif request.method == 'POST':
-        if not api_key:
-            # Jeśli POST przyszedł, a nie mamy klucza (np. błąd przy starcie)
-             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                 return JsonResponse({'status': 'error', 'error_message': "Błąd konfiguracji serwera (brak klucza API)."}, status=500)
-             else:
-                 error_message = "Błąd konfiguracji serwera (brak klucza API)."
-                 # Pozwól renderować stronę z błędem poniżej
+        # Poprawiona obsługa braku klucza OpenAI
+        if not openai_api_key:
+            error_msg_no_key = "Błąd konfiguracji serwera (brak klucza API OpenAI)."
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'error_message': error_msg_no_key}, status=500)
+            else:
+                # Ustaw error_message, który zostanie użyty w kontekście renderowania szablonu
+                error_message = error_msg_no_key
+                # Przejdź do renderowania szablonu z błędem (nie wykonuj reszty logiki POST)
+                context = {  # Przygotuj minimalny kontekst dla szablonu błędu
+                    "form": form,  # Przekaż pusty formularz
+                    "error_message": error_message,
+                    "messages": messages_queryset,
+                    "conversation": current_conversation,
+                    "conversation_history_list": conversation_history_list
+                }
+                return render(request, "myapp/chat.html", context)
 
         form = ChatForm(request.POST)
         if form.is_valid():
@@ -382,22 +456,104 @@ def chat(request, conversation_id=None):
                 )
                 user_timestamp = user_message_obj.get_formatted_timestamp()
 
+                # --- NOWOŚĆ: Wyszukiwanie w Google z SerpApi ---
+                search_context = ""
+                if serpapi_api_key:  # Wykonaj tylko jeśli mamy klucz SerpApi
+                    print(f"[DEBUG] Wykonywanie wyszukiwania SerpApi dla: '{user_prompt}'")
+                    try:
+                        params = {
+                            "q": user_prompt,  # Zapytanie użytkownika
+                            "api_key": serpapi_api_key,
+                            "hl": "pl",  # Język wyników (polski)
+                            "gl": "pl",  # Geolokalizacja (Polska)
+                            "num": 5  # Liczba wyników (np. 5)
+                        }
+                        search = GoogleSearch(params)
+                        results = search.get_dict()
+
+                        # Przetwarzanie wyników - bierzemy "organic_results" (główne linki)
+                        organic_results = results.get("organic_results", [])
+                        if organic_results:
+                            search_context += "Oto streszczenie wyników wyszukiwania Google:\n"
+                            for i, result in enumerate(organic_results[:3]):  # Weźmy top 3
+                                title = result.get("title", "")
+                                snippet = result.get("snippet", "Brak opisu.")
+                                link = result.get("link", "")  # Można dodać link, ale może zaśmiecić kontekst
+                                search_context += f"{i + 1}. {title}: {snippet}\n"  # Dodajemy tytuł i opis
+                        elif "answer_box" in results:  # Czasem Google daje bezpośrednią odpowiedź
+                            answer_box = results["answer_box"]
+                            answer = answer_box.get("answer") or answer_box.get("snippet")
+                            if answer:
+                                search_context += "Znaleziona szybka odpowiedź Google:\n"
+                                search_context += answer + "\n"
+
+                        if not search_context:
+                            search_context = "Nie znaleziono trafnych wyników wyszukiwania w Google."
+                        print(f"[DEBUG] Kontekst z SerpApi:\n{search_context}")
+
+                    except Exception as serp_e:
+                        print(f"[DEBUG] Błąd podczas wyszukiwania SerpApi: {serp_e}")
+                        search_context = "Wystąpił błąd podczas próby wyszukania aktualnych informacji."
+                else:
+                    search_context = "Wyszukiwanie w Google jest wyłączone (brak klucza API)."
+                    print("[DEBUG] Pomijanie wyszukiwania SerpApi - brak klucza.")
+
+
                 # Przygotuj historię dla OpenAI
-                openai_history = [{"role": msg.role, "content": msg.content}
-                                  for msg in current_conversation.messages.all()] # Używa sortowania z Meta
+                # Pobierz wszystkie wiadomości z bazy DANYCH dla tej konwersacji
+                db_messages = current_conversation.messages.all()  # Używa sortowania z Meta
+                openai_history = [{"role": msg.role, "content": msg.content} for msg in db_messages]
+
+                # --- NOWOŚĆ: Dodaj kontekst z wyszukiwania do promptu ---
+                # Modyfikujemy OSTATNIĄ wiadomość użytkownika w historii wysyłanej do OpenAI
+                # NIE modyfikujemy wiadomości zapisanej w bazie danych!
+                if openai_history and openai_history[-1]['role'] == 'user':
+                    # Tworzymy nowy, rozszerzony prompt tylko na potrzeby API call
+                    augmented_user_prompt = f"""Na podstawie poniższych, aktualnych wyników wyszukiwania z Google:
+                --- POCZĄTEK WYNIKÓW WYSZUKIWANIA ---
+                {search_context}
+                --- KONIEC WYNIKÓW WYSZUKIWANIA ---
+
+                Odpowiedz na ostatnie pytanie użytkownika: {user_prompt}
+                Pamiętaj, aby w swojej odpowiedzi bazować głównie na dostarczonych wynikach wyszukiwania, jeśli są one relewantne do pytania."""
+
+                    # Podmieniamy treść ostatniej wiadomości w kopii historii
+                    openai_history[-1]['content'] = augmented_user_prompt
+                else:
+                    # Sytuacja awaryjna - jeśli historia jest pusta lub ostatnia wiadomość nie jest od usera
+                    # Można dodać wiadomość systemową z kontekstem lub zwrócić błąd
+                    print("[OSTRZEŻENIE] Nie można było dołączyć kontekstu wyszukiwania do historii OpenAI.")
 
                 # Wywołaj OpenAI
-                client = OpenAI(api_key=api_key)
+                print("[DEBUG] Wysyłanie zapytania do OpenAI...")
+                client = OpenAI(api_key=openai_api_key)
                 response = client.chat.completions.create(
-                    model=model, messages=openai_history, temperature=0.7
+                    model=model,
+                    messages=openai_history,  # Użyj zmodyfikowanej historii
+                    temperature=0.7
                 )
                 assistant_response_content = response.choices[0].message.content
+                print("[DEBUG] Otrzymano odpowiedź od OpenAI.")
+
 
                 # Zapisz odpowiedź asystenta
+                # Zapisz odpowiedź asystenta (bez zmian)
                 assistant_message_obj = Message.objects.create(
                     conversation=current_conversation, role='assistant', content=assistant_response_content
                 )
                 assistant_timestamp = assistant_message_obj.get_formatted_timestamp()
+
+                # Ustaw tytuł konwersacji, jeśli jeszcze go nie ma (po zapisaniu pierwszej pary wiadomości)
+
+                if not current_conversation.title and user_prompt:
+                    # Sprawdź ponownie, bo mogło zostać ustawione w innym requescie
+                    current_conversation.refresh_from_db()
+                    if not current_conversation.title:
+                        current_conversation.title = Truncator(user_prompt).chars(50)
+                        current_conversation.save()
+                        # Odśwież listę w sidebarze, aby nowa konwersacja się pojawiła
+                        conversation_history_list = Conversation.objects.all().order_by('-last_updated')
+
 
                 # Odpowiedź AJAX
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -429,14 +585,22 @@ def chat(request, conversation_id=None):
                  # Renderuj z błędem
 
         else: # Formularz nieprawidłowy
-             error_message = "Wysłano pustą wiadomość." # Lub inny błąd walidacji
-             print(f"ChatForm errors: {form.errors}")
-             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                 return JsonResponse({'status': 'error', 'error_message': error_message}, status=400)
-             # Renderuj z błędem
+            if not form.is_valid():
+                error_message = "Wysłano pustą wiadomość lub formularz jest nieprawidłowy."
+                print(f"ChatForm errors: {form.errors}")
+                status_code = 400  # Bad Request
+            else:  # Błąd braku klucza OpenAI (obsłużony wyżej, ale dla pewności)
+                error_message = "Błąd konfiguracji serwera (brak klucza API OpenAI)."
+                status_code = 500  # Internal Server Error
+
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'error_message': error_message}, status=status_code)
 
         # Po udanym POST, odśwież historię na wypadek utworzenia nowej rozmowy
-        conversation_history_list = Conversation.objects.all()
+        if current_conversation:
+            conversation_history_list = Conversation.objects.all().order_by('-last_updated')
+            # Pobierz ponownie wiadomości dla bieżącej konwersacji, aby były aktualne w kontekście
+            messages_queryset = current_conversation.messages.all()
 
 
     # --- Przygotowanie kontekstu ---
