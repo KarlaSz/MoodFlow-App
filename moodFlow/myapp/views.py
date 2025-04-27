@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_POST
-from .models import Task, Conversation, Message,Category, Transaction
+from .models import Task, Conversation, Message,Category, Transaction, TYPE_CHOICES
 from .forms import TaskForm, ChatForm, TransactionForm
 from django.utils import timezone
 from openai import OpenAI
@@ -551,37 +551,54 @@ def finance(request):
     return render(request, "myapp/finanse.html", context)
 
 @login_required
-def add_transaction(request, transaction_type):
-    """Widok do dodawania nowego przychodu lub wydatku."""
+def add_transaction(request, transaction_type): # Zmiana nazwy argumentu dla jasności
     user = request.user
 
-    if transaction_type not in ['przychod', 'wydatek']:
-        raise Http404("Nieprawidłowy typ transakcji.")
+    # Mapowanie: Polski URL -> Wewnętrzny typ modelu
+    type_mapping = {
+        'przychod': 'income',
+        'wydatek': 'expense',
+    }
+    # Pobierz wewnętrzny typ (np. 'income' lub 'expense')
+    internal_transaction_type = type_mapping.get(transaction_type)
+
+    # Sprawdź, czy mapowanie się udało
+    if not internal_transaction_type:
+        raise Http404(f"Nieprawidłowy typ transakcji w URL: {transaction_type}")
+
+    # Pobierz polską nazwę wyświetlaną dla tego typu (użyj zaimportowanego TYPE_CHOICES)
+    type_display_name = dict(TYPE_CHOICES).get(internal_transaction_type, internal_transaction_type.capitalize())
 
     if request.method == 'POST':
-        # Przekazujemy request.user i transaction_type do formularza
-        form = TransactionForm(request.POST, user=user, transaction_type=transaction_type)
+        # --- Logika POST ---
+        print(f"Otrzymano żądanie POST dla add_transaction, typ URL: {transaction_type}") # Użyj transaction_type
+        print("Dane POST:", request.POST)
+
+        # Przekaż do formularza WEWNĘTRZNY typ ('income'/'expense')
+        form = TransactionForm(request.POST, user=user, transaction_type=internal_transaction_type)
         if form.is_valid():
+            print("Formularz JEST PRAWIDŁOWY. Zapisywanie...") # Dodatkowy print
             transaction = form.save(commit=False)
             transaction.user = user
-            transaction.type = transaction_type # Ustawiamy typ na podstawie URL
-            # Sprawdźmy dla pewności, czy wybrana kategoria ma właściwy typ
-            if transaction.category and transaction.category.type != transaction_type:
-                 # To nie powinno się zdarzyć dzięki filtrowaniu w __init__ formularza, ale dla bezpieczeństwa
-                 form.add_error('category', f"Wybrana kategoria musi być typu '{transaction.get_type_display()}'.")
-            else:
-                transaction.save()
-                # messages.success(request, f"Dodano {transaction.get_type_display()}!") # Możesz dodać komunikaty flash
-                return redirect('finance') # Przekieruj na stronę główną finansów
+            # Zapisz w bazie WEWNĘTRZNY typ
+            transaction.type = internal_transaction_type
+            transaction.save()
+            print("Transakcja zapisana. Przekierowanie na 'finance'.") # Dodatkowy print
+            return redirect('finance')
+        else:
+            # Błędy formularza
+            print(f"Formularz NIE JEST PRAWIDŁOWY ({transaction_type}):")
+            print(form.errors.as_json(escape_html=True))
     else:
-        # Przekazujemy request.user i transaction_type do formularza dla metody GET
-        form = TransactionForm(user=user, transaction_type=transaction_type)
+        # --- Logika GET ---
+        # Przekaż do formularza WEWNĘTRZNY typ ('income'/'expense') dla GET
+        form = TransactionForm(user=user, transaction_type=internal_transaction_type)
 
+    # --- Kontekst dla szablonu (dla GET i dla POST z błędami) ---
     context = {
-        'form': form,
-        'type_display': 'Przychód' if transaction_type == 'przychod' else 'Wydatek',
-        'transaction_type': transaction_type, # Dodajemy typ do kontekstu
-        'year': datetime.now().year
+        'form': form, # Przekaż formularz (pusty dla GET, z danymi/błędami dla POST)
+        'type_display': type_display_name, # Polska nazwa do wyświetlenia
+        'transaction_type_from_url': transaction_type, # Polski typ z URL (dla logiki w szablonie)
+        # 'year' jest dostarczany przez global_context
     }
-    # Możemy użyć jednego szablonu dla obu typów transakcji
     return render(request, 'myapp/add_transaction.html', context)

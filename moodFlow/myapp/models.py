@@ -24,6 +24,11 @@ IDEA_STATUS = [
     ("completed", "✅ Zakończone"),
 ]
 
+TYPE_CHOICES = [
+        ('expense', 'Wydatek'),
+        ('income', 'Przychód'),
+    ]
+
 class Task(models.Model):
     title = models.CharField(max_length=255)
     comment = models.TextField(blank=True, null=True)
@@ -119,10 +124,7 @@ class Message(models.Model):
         # Dodajmy metodę do formatowania czasu dla szablonu/API
 
 
-TYPE_CHOICES = [
-        ('expense', 'Wydatek'),
-        ('income', 'Przychód'),
-    ]
+
 
 class Category(models.Model):
     """Kategoria przychodu lub wydatku."""

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %} {# Jeśli używasz crispy-forms, co jest zalecane #}
+{% load crispy_forms_tags %}
 
 {% block title %}moodFlow - Dodaj {{ type_display }}{% endblock %}
 
@@ -10,31 +10,31 @@
             <div class="card bg-dark text-white">
                 <div class="card-header">
                     <h2 class="mb-0">
-                        {% if transaction_type == 'income' %}
-                            <i class="bi bi-plus-circle-fill text-info"></i> Nowy Przychód
+                        {% if transaction_type_from_url == 'przychod' %}
+                            <i class="bi bi-plus-circle-fill text-info"></i> Nowy {{ type_display }}
                         {% else %}
-                            <i class="bi bi-plus-circle text-danger"></i> Nowy Wydatek
+                            <i class="bi bi-plus-circle text-danger"></i> Nowy {{ type_display }}
                         {% endif %}
                     </h2>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" novalidate>
                         {% csrf_token %}
 
                         {% if form.errors %}
                             <div class="alert alert-danger">
                                 <strong>Wystąpiły błędy:</strong>
-                                {# Możesz zostawić ogólne wyświetlanie błędów, jeśli chcesz #}
-                                {# LUB pozwól crispy zająć się błędami przy polach #}
-                                 {{ form.non_field_errors }} {# Błędy nie przypisane do konkretnego pola #}
+
+
+                                 {{ form.non_field_errors }}
                             </div>
                         {% endif %}
 
-                        {% load crispy_forms_tags %} {# Upewnij się, że load jest przed użyciem tagu #}
-                        {% crispy form %} {# TEN TAG RENDERUJE WSZYSTKIE POLA #}
+                        {% load crispy_forms_tags %}
+                        {% crispy form %}
 
                         <div class="d-grid gap-2 mt-4">
-                             <button type="submit" class="btn {% if transaction_type == 'income' %}btn-info{% else %}btn-danger{% endif %} btn-lg">
+                             <button type="submit" class="btn {% if transaction_type_from_url == 'przychod' %}btn-info{% else %}btn-danger{% endif %} btn-lg">
                                 <i class="bi bi-check-circle"></i> Zapisz {{ type_display }}
                             </button>
                              <a href="{% url 'finance' %}" class="btn btn-outline-secondary">
