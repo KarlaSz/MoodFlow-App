@@ -1,8 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_POST
-from .models import Task, Conversation, Message
-from .forms import TaskForm, ChatForm
+from .models import Task, Conversation, Message,Category, Transaction
+from .forms import TaskForm, ChatForm, TransactionForm
 from django.utils import timezone
 from openai import OpenAI
 from serpapi import GoogleSearch
@@ -11,6 +12,8 @@ from .forms import ChatForm
 import requests #for API wather conection
 from django.utils.text import Truncator
 from datetime import datetime
+from django.db.models import Sum, Q
+from decimal import Decimal
 
 #for footer
 def global_context(request):
@@ -239,124 +242,6 @@ def get_api_keys():
         print(f"Błąd odczytu pliku z kluczami API: {str(e)}")
     return keys.get('OPENAI_API_KEY'), keys.get('SERPAPI_API_KEY')
 
-# zdublowane funkcje keys
-# def get_openai_api_key():
-#     """Pobiera klucz API OpenAI z pliku .env.txt"""
-#     try:
-#         keys = {}
-#         with open('./.env.txt', 'r') as f:
-#             for line in f:
-#                 line = line.strip()
-#                 if line and not line.startswith('#'):
-#                     key_name, key_value = line.split('=', 1)
-#                     keys[key_name.strip()] = key_value.strip()
-#         return keys.get('OPENAI_API_KEY') # Zwraca klucz OpenAI lub None
-#     except FileNotFoundError:
-#         print("Błąd: Plik .env.txt nie został znaleziony.")
-#         return None
-#     except Exception as e:
-#         print(f"Błąd odczytu pliku z kluczami API: {str(e)}")
-#         return None
-#
-# def get_serpapi_key():
-#     """Pobiera klucz API SerpApi z pliku .env.txt"""
-#     try:
-#         keys = {}
-#         with open('./.env.txt', 'r') as f:
-#             for line in f:
-#                 line = line.strip()
-#                 if line and not line.startswith('#'): # Ignoruj puste linie i komentarze
-#                     key_name, key_value = line.split('=', 1)
-#                     keys[key_name.strip()] = key_value.strip()
-#         return keys.get('SERPAPI_API_KEY') # Zwraca klucz SerpApi lub None
-#     except FileNotFoundError:
-#         print("Błąd: Plik .env.txt nie został znaleziony.")
-#         return None
-#     except Exception as e:
-#         print(f"Błąd odczytu pliku z kluczami API: {str(e)}")
-#         return None
-
-
-
-#
-# def chat(request):
-#     # preprompt = """Jesteś asystentem mojej firmy Karo. Masz za zadanie odpowiadać klientom na temat naszych produktów.
-#     #     FIRMA ZAJMUJE SIĘ:
-#     #     1. Tylko i wyłącznie sprzedaż systemów: Windows 11, Linux Debian 13
-#     #     2. Tylko i wyłącznie sprzedaż oprogramowania biurowego: MS Office 365
-#     #     3. Niczym poza tym nie handlujemy i nie doradzamy
-#     #
-#     #     DORADZAJ klientowi zakup TYLKO naszych produktów!
-#     #     NIE proponuj innych. Sprzedajemy tylko nasze.
-#     #
-#     #     WAŻNE:
-#     #     1. Jak klient zapyta o produkt innym niż nasz (nawet kuchenkę mikrofalową), zaproponuj, że potrezbuje do tego system operacyjny, który sprzedajemy.
-#     #     2. Zachwalaj nasze usługi!
-#     #     3. Na dzień dobry przedstaw naszą oefrtę, niezależnie co chce klient.
-#     #
-#     #     CENNIK:
-#     #     Windows 11 - cena 3000PLN
-#     #     Linux Debian 13 - cena 5000PLN
-#     #
-#     #     Tu jest pierwsze pytanie klienta:
-#     #     """
-#     messages = []
-#     api_key = get_api_key()
-#     error_message = None
-#     model = "gpt-4o"
-#     # model = "gpt-3.5-turbo"
-#     assistant_response = None
-#     response = None
-#
-#     if not api_key:
-#         error_message = "Błędna konfiguracja aplikacji. Skontaktuj się z administratorem."
-#
-#     form = ChatForm(request.POST or None)
-#
-#     if request.method == 'POST' and form.is_valid() and api_key:
-#
-#         try:
-#             user_prompt = form.cleaned_data["prompt"]
-#             history_json = form.cleaned_data.get("conversation_history") or "[]"
-#             messages = json.loads(history_json)
-#             if messages == []:
-#                 messages.append({"role": "user", "content": user_prompt})
-#
-#             client = OpenAI(api_key=api_key)
-#             # user_prompt = preprompt + user_prompt
-#             messages.append({"role": "user", "content": user_prompt})
-#             response = client.chat.completions.create(
-#                 model=model,
-#                 messages=messages,
-#                 temperature=0.7
-#             )
-#             assistant_response = response.choices[0].message.content
-#             messages.append({"role": "assistant", "content": assistant_response})
-#
-#             # Jeśli to zapytanie AJAX, zwracamy dane w formacie JSON
-#             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-#                 return JsonResponse({
-#                     'status': 'success',
-#                     'assistant_response': assistant_response,
-#                     'conversation_history': json.dumps(messages)
-#                 })
-#
-#             # Dla normalnego żądania POST, renderujemy stronę jak wcześniej
-#             form = ChatForm(initial={"conversation_history": json.dumps(messages)})
-#
-#         except Exception as e:
-#             error_message = f"Wystąpił błąd: {str(e)}"
-#
-#             # Jeśli to zapytanie AJAX, zwracamy błąd w formacie JSON
-#             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-#                 return JsonResponse({
-#                     'status': 'error',
-#                     'error_message': error_message
-#                 }, status=500)
-#
-#     return render(request, "myapp/chat.html",
-#                   {"form": form, "error_message": error_message,
-#                    "assistant_response": assistant_response, "response": response, "messages": messages})
 
 def chat(request, conversation_id=None):
     openai_api_key, serpapi_api_key = get_api_keys()
@@ -614,3 +499,89 @@ def chat(request, conversation_id=None):
     print(f"[DEBUG] Rendering template. Conversation loaded: {current_conversation}. Messages in context: {messages_queryset.count() if messages_queryset else 0}")
     return render(request, "myapp/chat.html", context)
 
+#finanse
+@login_required
+def finance(request):
+    """Główny widok strony finansowej."""
+    user = request.user
+    today = timezone.now().date()
+    current_month = today.month
+    current_year = today.year
+
+    # 1. Pobierz ostatnie transakcje (np. 5)
+    recent_transactions = Transaction.objects.filter(user=user).order_by('-date', '-created_at')[:5]
+
+    # 2. Oblicz podsumowanie miesiąca
+    monthly_transactions = Transaction.objects.filter(
+        user=user,
+        date__year=current_year,
+        date__month=current_month
+    )
+
+    monthly_income_sum = monthly_transactions.filter(type='przychod').aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    monthly_expenses_sum = monthly_transactions.filter(type='wydatek').aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    monthly_balance = monthly_income_sum - monthly_expenses_sum
+
+    # Przygotuj dane dla podsumowania - na razie bez poprzedniego miesiąca i oszczędności
+    summary_data = {
+        'balance': monthly_balance,
+        'expenses': monthly_expenses_sum,
+        'income': monthly_income_sum,
+        'savings': Decimal('0.00'), # Placeholder - do dodania później
+        'previous_balance': Decimal('0.00'), # Placeholder - do dodania później
+    }
+
+    # 3. Przygotuj dane dla budżetu (placeholder - do dodania później)
+    budget_data = [] # Pusta lista na razie
+
+    # 4. Przygotuj dane dla celów (placeholder - do dodania później)
+    goals_data = [] # Pusta lista na razie
+
+    # 5. Przygotuj dane dla nadchodzących płatności (placeholder - do dodania później)
+    upcoming_payments_data = [] # Pusta lista na razie
+
+    context = {
+        'recent_transactions': recent_transactions,
+        'summary': summary_data,
+        'budgets': budget_data, # Przekaż puste listy/placeholdery
+        'goals': goals_data,
+        'upcoming_payments': upcoming_payments_data,
+        'year': datetime.now().year # Z global_context, ale dla pewności
+    }
+    return render(request, "myapp/finanse.html", context)
+
+@login_required
+def add_transaction(request, transaction_type):
+    """Widok do dodawania nowego przychodu lub wydatku."""
+    user = request.user
+
+    if transaction_type not in ['przychod', 'wydatek']:
+        raise Http404("Nieprawidłowy typ transakcji.")
+
+    if request.method == 'POST':
+        # Przekazujemy request.user i transaction_type do formularza
+        form = TransactionForm(request.POST, user=user, transaction_type=transaction_type)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.user = user
+            transaction.type = transaction_type # Ustawiamy typ na podstawie URL
+            # Sprawdźmy dla pewności, czy wybrana kategoria ma właściwy typ
+            if transaction.category and transaction.category.type != transaction_type:
+                 # To nie powinno się zdarzyć dzięki filtrowaniu w __init__ formularza, ale dla bezpieczeństwa
+                 form.add_error('category', f"Wybrana kategoria musi być typu '{transaction.get_type_display()}'.")
+            else:
+                transaction.save()
+                # messages.success(request, f"Dodano {transaction.get_type_display()}!") # Możesz dodać komunikaty flash
+                return redirect('finance') # Przekieruj na stronę główną finansów
+    else:
+        # Przekazujemy request.user i transaction_type do formularza dla metody GET
+        form = TransactionForm(user=user, transaction_type=transaction_type)
+
+    context = {
+        'form': form,
+        'type_display': 'Przychód' if transaction_type == 'przychod' else 'Wydatek',
+        'transaction_type': transaction_type, # Dodajemy typ do kontekstu
+        'year': datetime.now().year
+    }
+    # Możemy użyć jednego szablonu dla obu typów transakcji
+    return render(request, 'myapp/add_transaction.html', context)

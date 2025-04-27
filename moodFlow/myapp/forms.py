@@ -1,5 +1,7 @@
 from django import forms
-from .models import Task
+from .models import Task, Transaction, Category
+from django.utils import timezone
+
 
 class TaskForm(forms.ModelForm):
     class Meta:
@@ -20,3 +22,33 @@ class ChatForm(forms.Form):
                                                                            "id": "prompt",
                                                                              "rows":2,
                                                                     }))
+
+class TransactionForm(forms.ModelForm):
+    # Dynamicznie filtrujemy kategorie w widoku
+    category = forms.ModelChoiceField(queryset=Category.objects.none(), label="Kategoria", required=True)
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), initial=timezone.now().date(), label="Data") # Używamy DateInput dla łatwiejszego wyboru
+
+    class Meta:
+        model = Transaction
+        fields = ['category', 'amount', 'description', 'date']
+        labels = {
+            'amount': 'Kwota',
+            'description': 'Opis (opcjonalnie)',
+        }
+        widgets = {
+            'description': forms.TextInput(attrs={'placeholder': 'np. Zakupy w Biedronce'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None) # Pobieramy użytkownika przekazanego z widoku
+        transaction_type = kwargs.pop('transaction_type', None) # Pobieramy typ ('income'/'expense')
+        super().__init__(*args, **kwargs)
+
+        if user and transaction_type:
+            # Filtrujemy queryset kategorii dla danego użytkownika i typu transakcji
+            self.fields['category'].queryset = Category.objects.filter(user=user, type=transaction_type)
+            self.fields['category'].empty_label = "Wybierz kategorię..." # Domyślny tekst
+        else:
+             # Jeśli brak użytkownika/typu, queryset pozostaje pusty, ale zapobiega to błędowi
+             self.fields['category'].queryset = Category.objects.none()
+             self.fields['category'].disabled = True # Opcjonalnie można wyłączyć pole

@@ -38,8 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'myapp',
     'django.contrib.humanize',
+    'crispy_forms',
+    'crispy_bootstrap5',
+    'myapp',
+
 
 ]
 
@@ -76,7 +79,9 @@ TEMPLATES = [
 
 
 
-
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_DEFAULT_TEMPLATE_PACK = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 WSGI_APPLICATION = 'moodFlow.wsgi.application'
 

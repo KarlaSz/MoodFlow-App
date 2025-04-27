@@ -1,4 +1,7 @@
 {% extends 'base.html' %}
+{% load static %} {# Jeśli używasz plików statycznych jak CSS/JS specyficznych dla tej strony #}
+{% load humanize %} {# Dobra biblioteka do formatowania liczb, np. intcomma #}
+{# Upewnij się, że masz 'django.contrib.humanize' w INSTALLED_APPS #}
 
 {% block title %}moodFlow - Twoje Finanse{% endblock %}
 
@@ -10,12 +13,13 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h1 class="display-5 mb-0"><i class="bi bi-wallet2"></i> Twoje Finanse</h1>
                 <div>
-                    <button class="btn btn-outline-light me-2">
+                    {# Linki do dodawania transakcji #}
+                    <a href="{% url 'add_transaction' transaction_type='wydatek' %}" class="btn btn-outline-light me-2">
                         <i class="bi bi-plus-circle"></i> Nowy wydatek
-                    </button>
-                    <button class="btn btn-outline-light">
+                    </a>
+                    <a href="{% url 'add_transaction' transaction_type='przychod' %}" class="btn btn-outline-light">
                         <i class="bi bi-plus-circle-fill"></i> Nowy przychód
-                    </button>
+                    </a>
                 </div>
             </div>
             <p class="lead mt-2">Zarządzaj swoimi pieniędzmi mądrze i świadomie</p>
@@ -28,8 +32,12 @@
             <div class="card bg-dark text-white h-100">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase mb-2">Bilans miesiąca</h6>
-                    <h2 class="mb-0 text-success">+2,540 zł</h2>
-                    <small class="text-white-50">Poprzedni: +1,890 zł</small>
+                    {# Dynamiczny bilans + kolor #}
+                    <h2 class="mb-0 {% if summary.balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        {% if summary.balance >= 0 %}+{% endif %}{{ summary.balance|floatformat:2|intcomma }} zł
+                    </h2>
+                    {# Placeholder dla poprzedniego bilansu #}
+                    <small class="text-white-50">Poprzedni: {{ summary.previous_balance|floatformat:2 }} zł</small>
                 </div>
             </div>
         </div>
@@ -37,7 +45,8 @@
             <div class="card bg-dark text-white h-100">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase mb-2">Wydatki</h6>
-                    <h2 class="mb-0 text-danger">3,760 zł</h2>
+                    {# Dynamiczne wydatki #}
+                    <h2 class="mb-0 text-danger">{{ summary.expenses|floatformat:2|intcomma }} zł</h2>
                     <small class="text-white-50">Ten miesiąc</small>
                 </div>
             </div>
@@ -46,7 +55,8 @@
             <div class="card bg-dark text-white h-100">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase mb-2">Przychody</h6>
-                    <h2 class="mb-0 text-info">6,300 zł</h2>
+                    {# Dynamiczne przychody #}
+                    <h2 class="mb-0 text-info">{{ summary.income|floatformat:2|intcomma }} zł</h2>
                     <small class="text-white-50">Ten miesiąc</small>
                 </div>
             </div>
@@ -55,48 +65,42 @@
             <div class="card bg-dark text-white h-100">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase mb-2">Oszczędności</h6>
-                    <h2 class="mb-0">15,230 zł</h2>
+                    {# Placeholder dla oszczędności #}
+                    <h2 class="mb-0">{{ summary.savings|floatformat:2|intcomma }} zł</h2>
                     <small class="text-white-50">Łącznie</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Wykresy i wizualizacje -->
+    <!-- Wykresy i wizualizacje (Pozostają placeholderami na razie) -->
     <div class="row mb-4">
         <div class="col-md-8 mb-3">
-            <div class="card bg-dark text-white h-100">
+             <div class="card bg-dark text-white h-100">
                 <div class="card-header d-flex justify-content-between">
                     <h5 class="mb-0">Przepływ środków</h5>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-light active">Miesiąc</button>
-                        <button class="btn btn-outline-light">Kwartał</button>
-                        <button class="btn btn-outline-light">Rok</button>
-                    </div>
-                </div>
+                     </div>
                 <div class="card-body">
-                    <div style="height: 280px; position: relative;">
-                        <!-- Tutaj będzie wykres -->
-                        <div class="position-absolute top-50 start-50 translate-middle text-center">
+                     <div style="height: 280px; position: relative;">
+                         <div class="position-absolute top-50 start-50 translate-middle text-center">
                             <i class="bi bi-bar-chart-line fs-1 mb-2"></i>
-                            <p>Wykres przepływu środków będzie tutaj</p>
-                            <p class="text-white-50 small">Wykresy zostaną zaimplementowane przy użyciu Chart.js</p>
+                            <p>Wykres przepływu środków (do zrobienia)</p>
+                            <p class="text-white-50 small">Wymaga integracji z biblioteką JS np. Chart.js</p>
                         </div>
-                    </div>
+                     </div>
                 </div>
-            </div>
+             </div>
         </div>
         <div class="col-md-4 mb-3">
             <div class="card bg-dark text-white h-100">
-                <div class="card-header">
+                 <div class="card-header">
                     <h5 class="mb-0">Struktura wydatków</h5>
                 </div>
                 <div class="card-body text-center">
-                    <div style="height: 280px; position: relative;">
-                        <!-- Tutaj będzie wykres kołowy -->
-                        <div class="position-absolute top-50 start-50 translate-middle">
+                     <div style="height: 280px; position: relative;">
+                         <div class="position-absolute top-50 start-50 translate-middle">
                             <i class="bi bi-pie-chart fs-1 mb-2"></i>
-                            <p>Wykres kategorii wydatków</p>
+                            <p>Wykres kategorii wydatków (do zrobienia)</p>
                         </div>
                     </div>
                 </div>
@@ -104,100 +108,27 @@
         </div>
     </div>
 
-    <!-- Budżet i cele -->
+    <!-- Budżet i cele (Pozostają placeholderami na razie) -->
     <div class="row mb-4">
         <div class="col-md-6 mb-3">
             <div class="card bg-dark text-white h-100">
                 <div class="card-header d-flex justify-content-between">
                     <h5 class="mb-0">Budżet miesięczny</h5>
-                    <button class="btn btn-sm btn-outline-light">
-                        <i class="bi bi-pencil"></i> Edytuj
-                    </button>
-                </div>
+                     </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>Jedzenie (1,200 / 1,500 zł)</span>
-                            <span>80%</span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 80%"></div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>Transport (480 / 500 zł)</span>
-                            <span>96%</span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: 96%"></div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>Rozrywka (750 / 700 zł)</span>
-                            <span>107%</span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>Rachunki (1,100 / 1,200 zł)</span>
-                            <span>92%</span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: 92%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>Subskrypcje (230 / 300 zł)</span>
-                            <span>77%</span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 77%"></div>
-                        </div>
-                    </div>
-                </div>
+                    <p class="text-white-50">Sekcja budżetu w budowie...</p>
+                    {# Tutaj w przyszłości pętla po `budgets` #}
+                 </div>
             </div>
         </div>
         <div class="col-md-6 mb-3">
             <div class="card bg-dark text-white h-100">
-                <div class="card-header d-flex justify-content-between">
+                 <div class="card-header d-flex justify-content-between">
                     <h5 class="mb-0">Twoje cele finansowe</h5>
-                    <button class="btn btn-sm btn-outline-light">
-                        <i class="bi bi-plus"></i> Nowy cel
-                    </button>
-                </div>
+                     </div>
                 <div class="card-body">
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>Wakacje w Grecji</span>
-                            <span>4,500 / 6,000 zł</span>
-                        </div>
-                        <div class="progress" style="height: 15px;">
-                            <div class="progress-bar bg-info" role="progressbar" style="width: 75%"></div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-1">
-                            <small class="text-white-50">Cel na: Lipiec 2025</small>
-                            <small class="text-white-50">75% zrealizowane</small>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>Nowy laptop</span>
-                            <span>2,300 / 5,000 zł</span>
-                        </div>
-                        <div class="progress" style="height: 15px;">
-                            <div class="progress-bar bg-info" role="progressbar" style="width: 46%"></div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-1">
-                            <small class="text-white-50">Cel na: Wrzesień 2025</small>
-                            <small class="text-white-50">46% zrealizowane</small>
-                        </div>
-                    </div>
+                     <p class="text-white-50">Sekcja celów finansowych w budowie...</p>
+                     {# Tutaj w przyszłości pętla po `goals` #}
                 </div>
             </div>
         </div>
@@ -209,197 +140,75 @@
             <div class="card bg-dark text-white">
                 <div class="card-header d-flex justify-content-between">
                     <h5 class="mb-0">Ostatnie transakcje</h5>
-                    <button class="btn btn-sm btn-outline-light">Zobacz wszystkie</button>
+                    {# Link do pełnej listy transakcji (do zrobienia) #}
+                    {# <a href="{% url 'transaction_list' %}" class="btn btn-sm btn-outline-light">Zobacz wszystkie</a> #}
+                    <button class="btn btn-sm btn-outline-light" disabled>Zobacz wszystkie</button> {# Na razie wyłączony #}
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush bg-transparent">
+                        {# Pętla przez ostatnie transakcje #}
+                        {% for tx in recent_transactions %}
                         <div class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center py-3">
                             <div class="d-flex align-items-center">
                                 <div class="me-3">
-                                    <i class="bi bi-cart-fill text-danger fs-4"></i>
+                                    {# Dynamiczna ikona i kolor na podstawie typu #}
+                                    {% if tx.type == 'expense' %}
+                                        <i class="bi bi-cart-fill text-danger fs-4"></i> {# Domyślna ikona wydatku #}
+                                    {% else %}
+                                        <i class="bi bi-cash-stack text-success fs-4"></i> {# Domyślna ikona przychodu #}
+                                    {% endif %}
+                                    {# W przyszłości można dodać mapowanie ikon na kategorie #}
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">Zakupy spożywcze</h6>
-                                    <small class="text-white-50">Biedronka</small>
+                                    <h6 class="mb-0">{{ tx.category.name|default:"Bez kategorii" }}</h6>
+                                    <small class="text-white-50">{{ tx.description|default:"" }}</small>
                                 </div>
                             </div>
                             <div class="text-end">
-                                <div class="text-danger">-156.42 zł</div>
-                                <small class="text-white-50">Dzisiaj</small>
+                                {# Kwota z odpowiednim kolorem i znakiem #}
+                                <div class="{% if tx.type == 'expense' %}text-danger{% else %}text-success{% endif %}">
+                                    {% if tx.type == 'expense' %}-{% else %}+{% endif %}{{ tx.amount|floatformat:2|intcomma }} zł
+                                </div>
+                                {# Data transakcji #}
+                                <small class="text-white-50">{{ tx.date|date:"d M Y" }}</small>
+                                {# Można dodać przyciski edycji/usuwania później #}
                             </div>
                         </div>
-                        <div class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center py-3">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <i class="bi bi-cup-hot-fill text-danger fs-4"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">Kawiarnia</h6>
-                                    <small class="text-white-50">Starbucks</small>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="text-danger">-18.90 zł</div>
-                                <small class="text-white-50">Wczoraj</small>
-                            </div>
+                        {% empty %}
+                        <div class="list-group-item bg-dark text-white border-secondary text-center py-3">
+                            <p class="text-white-50 mb-0">Brak zarejestrowanych transakcji.</p>
                         </div>
-                        <div class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center py-3">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <i class="bi bi-building text-success fs-4"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">Wynagrodzenie</h6>
-                                    <small class="text-white-50">XYZ Company</small>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="text-success">+6,300.00 zł</div>
-                                <small class="text-white-50">5 kwietnia 2025</small>
-                            </div>
-                        </div>
-                        <div class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center py-3">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <i class="bi bi-lightning-charge-fill text-danger fs-4"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">Rachunek za prąd</h6>
-                                    <small class="text-white-50">PGE</small>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="text-danger">-246.80 zł</div>
-                                <small class="text-white-50">3 kwietnia 2025</small>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-3">
             <div class="card bg-dark text-white">
-                <div class="card-header">
+                 <div class="card-header">
                     <h5 class="mb-0"><i class="bi bi-robot"></i> Agent AI - Analizy</h5>
-                </div>
+                 </div>
                 <div class="card-body">
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-lightbulb-fill text-warning me-2"></i>
-                            <h6 class="mb-0">Spostrzeżenie</h6>
-                        </div>
-                        <p>Wydajesz 25% więcej niż w zeszłym miesiącu na jedzenie. Czy chcesz ustawić limit na wydatki w restauracjach?</p>
-                    </div>
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-graph-up-arrow text-info me-2"></i>
-                            <h6 class="mb-0">Podsumowanie</h6>
-                        </div>
-                        <p>Twój największy wydatek w tym miesiącu to abonamenty - 320 zł. Możesz zaoszczędzić łącząc Netflix + HBO w jeden pakiet.</p>
-                    </div>
-                    <div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-calendar-check text-success me-2"></i>
-                            <h6 class="mb-0">Przypomnienie</h6>
-                        </div>
-                        <p>Rata kredytu (1,250 zł) wypada za 5 dni. Upewnij się, że masz wystarczające środki na koncie.</p>
-                    </div>
-                    <div class="text-center mt-3">
-                        <button class="btn btn-outline-light">
-                            <i class="bi bi-chat-dots"></i> Zapytaj Agenta
-                        </button>
-                    </div>
-                </div>
+                    <p class="text-white-50">Analizy AI w budowie...</p>
+                     {# Statyczne dane AI na razie zostają #}
+                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Przypomnienia o płatnościach -->
+    <!-- Przypomnienia o płatnościach (Placeholder na razie) -->
     <div class="row">
         <div class="col-md-12">
             <div class="card bg-dark text-white">
                 <div class="card-header d-flex justify-content-between">
                     <h5 class="mb-0"><i class="bi bi-bell"></i> Nadchodzące płatności</h5>
-                    <button class="btn btn-sm btn-outline-light">
-                        <i class="bi bi-plus"></i> Dodaj przypomnienie
-                    </button>
-                </div>
+                    </div>
                 <div class="card-body p-0">
-                    <table class="table table-dark table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Nazwa</th>
-                                <th>Kwota</th>
-                                <th>Kategoria</th>
-                                <th>Termin</th>
-                                <th>Status</th>
-                                <th>Akcje</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Czynsz</td>
-                                <td>1,450.00 zł</td>
-                                <td>Mieszkanie</td>
-                                <td>10 kwietnia 2025</td>
-                                <td><span class="badge bg-warning">Zbliża się</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-light me-1">
-                                        <i class="bi bi-check-circle"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-light">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Rata kredytu</td>
-                                <td>1,250.00 zł</td>
-                                <td>Kredyty</td>
-                                <td>12 kwietnia 2025</td>
-                                <td><span class="badge bg-warning">Zbliża się</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-light me-1">
-                                        <i class="bi bi-check-circle"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-light">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Netflix</td>
-                                <td>59.90 zł</td>
-                                <td>Subskrypcje</td>
-                                <td>15 kwietnia 2025</td>
-                                <td><span class="badge bg-secondary">Za 8 dni</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-light me-1">
-                                        <i class="bi bi-check-circle"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-light">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Ubezpieczenie samochodu</td>
-                                <td>220.00 zł</td>
-                                <td>Transport</td>
-                                <td>20 kwietnia 2025</td>
-                                <td><span class="badge bg-secondary">Za 13 dni</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-light me-1">
-                                        <i class="bi bi-check-circle"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-light">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                    <div class="p-3">
+                         <p class="text-white-50">Sekcja przypomnień o płatnościach w budowie...</p>
+                    </div>
+                    {# Tabela z przypomnieniami w przyszłości #}
+                 </div>
             </div>
         </div>
     </div>
