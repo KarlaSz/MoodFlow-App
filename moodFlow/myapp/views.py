@@ -551,54 +551,84 @@ def finance(request):
     return render(request, "myapp/finanse.html", context)
 
 @login_required
-def add_transaction(request, transaction_type): # Zmiana nazwy argumentu dla jasności
+def add_transaction(request, transaction_type):
+    # ----- DODAJ TEN PRINT -----
+    print(f"--- [DEBUG] Wszedłem do add_transaction --- Typ URL: {transaction_type}, Metoda: {request.method}")
+    # ---------------------------
+
     user = request.user
 
-    # Mapowanie: Polski URL -> Wewnętrzny typ modelu
     type_mapping = {
         'przychod': 'income',
         'wydatek': 'expense',
     }
-    # Pobierz wewnętrzny typ (np. 'income' lub 'expense')
     internal_transaction_type = type_mapping.get(transaction_type)
 
-    # Sprawdź, czy mapowanie się udało
     if not internal_transaction_type:
+        print(f"--- [DEBUG] BŁĄD: Nieprawidłowy typ transakcji w URL: {transaction_type}") # Dodaj logowanie błędu
         raise Http404(f"Nieprawidłowy typ transakcji w URL: {transaction_type}")
 
-    # Pobierz polską nazwę wyświetlaną dla tego typu (użyj zaimportowanego TYPE_CHOICES)
     type_display_name = dict(TYPE_CHOICES).get(internal_transaction_type, internal_transaction_type.capitalize())
 
     if request.method == 'POST':
-        # --- Logika POST ---
-        print(f"Otrzymano żądanie POST dla add_transaction, typ URL: {transaction_type}") # Użyj transaction_type
-        print("Dane POST:", request.POST)
+        # ----- DODAJ TEN PRINT -----
+        print(f"--- [DEBUG] Przetwarzam POST w add_transaction ---")
+        print("--- [DEBUG] Dane POST:", request.POST)
+        # ---------------------------
 
-        # Przekaż do formularza WEWNĘTRZNY typ ('income'/'expense')
         form = TransactionForm(request.POST, user=user, transaction_type=internal_transaction_type)
-        if form.is_valid():
-            print("Formularz JEST PRAWIDŁOWY. Zapisywanie...") # Dodatkowy print
-            transaction = form.save(commit=False)
-            transaction.user = user
-            # Zapisz w bazie WEWNĘTRZNY typ
-            transaction.type = internal_transaction_type
-            transaction.save()
-            print("Transakcja zapisana. Przekierowanie na 'finance'.") # Dodatkowy print
-            return redirect('finance')
-        else:
-            # Błędy formularza
-            print(f"Formularz NIE JEST PRAWIDŁOWY ({transaction_type}):")
-            print(form.errors.as_json(escape_html=True))
-    else:
-        # --- Logika GET ---
-        # Przekaż do formularza WEWNĘTRZNY typ ('income'/'expense') dla GET
-        form = TransactionForm(user=user, transaction_type=internal_transaction_type)
 
-    # --- Kontekst dla szablonu (dla GET i dla POST z błędami) ---
-    context = {
-        'form': form, # Przekaż formularz (pusty dla GET, z danymi/błędami dla POST)
-        'type_display': type_display_name, # Polska nazwa do wyświetlenia
-        'transaction_type_from_url': transaction_type, # Polski typ z URL (dla logiki w szablonie)
-        # 'year' jest dostarczany przez global_context
-    }
+        # ----- DODAJ TEN PRINT PRZED is_valid -----
+        print(f"--- [DEBUG] Instancja formularza utworzona. Sprawdzam is_valid()... ---")
+        # ----------------------------------------
+
+        if form.is_valid():
+            print("--- [DEBUG] Formularz JEST PRAWIDŁOWY. Zapisywanie... ---")
+            try:
+                transaction = form.save(commit=False)
+                transaction.user = user
+                transaction.type = internal_transaction_type
+                transaction.save()
+                print("--- [DEBUG] Transakcja zapisana. Przekierowanie na 'finance'. ---")
+                # messages.success(request, f"Dodano {type_display_name.lower()}!") # Możesz odkomentować, jeśli chcesz komunikaty
+                return redirect('finance')
+            except Exception as e:
+                # Złap potencjalne błędy przy zapisie
+                print(f"--- [DEBUG] BŁĄD podczas ZAPISU transakcji: {e} ---")
+                # Tutaj możesz dodać komunikat błędu dla użytkownika, jeśli chcesz
+                # messages.error(request, "Wystąpił nieoczekiwany błąd podczas zapisywania transakcji.")
+                # Renderuj stronę ponownie z błędem (lub przekieruj z komunikatem)
+                context = {
+                    'form': form, # Przekaż formularz z danymi, które użytkownik wprowadził
+                    'type_display': type_display_name,
+                    'transaction_type_from_url': transaction_type,
+                    'error_message': 'Wystąpił błąd podczas zapisu. Spróbuj ponownie.' # Prosty komunikat
+                }
+                return render(request, 'myapp/add_transaction.html', context)
+
+        else:
+            # ----- ZMODYFIKOWANY PRINT DLA BŁĘDÓW -----
+            print(f"--- [DEBUG] Formularz NIE JEST PRAWIDŁOWY (typ: {transaction_type}) ---")
+            # Użyj form.errors.as_text() dla czytelniejszego formatu w konsoli
+            print("--- [DEBUG] Błędy formularza:\n", form.errors.as_text())
+            # ------------------------------------------
+    else: # GET request
+        print(f"--- [DEBUG] Przetwarzam GET w add_transaction ---") # Print dla GET
+        form = TransactionForm(user=user, transaction_type=internal_transaction_type)
+        # Sprawdźmy, czy kategorie są ładowane poprawnie w GET
+        print(f"--- [DEBUG] Kategorie załadowane do formularza (GET): {form.fields['category'].queryset.count()} sztuk ---")
+
+
+    # Przygotuj kontekst, również w przypadku błędu zapisu w bloku try/except powyżej
+    if 'context' not in locals(): # Jeśli kontekst nie został utworzony w bloku except
+        context = {
+            'form': form, # Przekaż formularz (pusty dla GET, z błędami dla POST)
+            'type_display': type_display_name,
+            'transaction_type_from_url': transaction_type,
+        }
+        # Dodaj błędy do kontekstu, aby można je było wyświetlić w szablonie
+        if request.method == 'POST' and not form.is_valid():
+             context['form_errors'] = form.errors # Przekaż błędy do szablonu
+
+    print(f"--- [DEBUG] Renderuję szablon add_transaction.html ---") # Print przed renderowaniem
     return render(request, 'myapp/add_transaction.html', context)

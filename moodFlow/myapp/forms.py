@@ -26,22 +26,7 @@ class ChatForm(forms.Form):
 class TransactionForm(forms.ModelForm):
     # Dynamicznie filtrujemy kategorie w widoku
     category = forms.ModelChoiceField(queryset=Category.objects.none(), label="Kategoria", required=True)
-    amount = forms.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        label="Kwota",
-        widget=forms.NumberInput(attrs={'step': '0.01', 'placeholder': '0.00'}),  # Dodaj step i placeholder
-        required=True
-    )
-    description = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'np. Zakupy w Biedronce'}),
-                                  label="Opis (opcjonalnie)", required=False)
-    date = forms.DateField(
-        widget=forms.TextInput(attrs={'placeholder': 'RRRR-MM-DD'}),
-        initial=timezone.now().date(),  # Initial może zostać
-        label="Data (RRRR-MM-DD)",  # Zaktualizuj etykietę
-        input_formats=['%Y-%m-%d'],  # Powiedz Django, jakiego formatu oczekuje
-        required=True
-    )
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), initial=timezone.now().date(), label="Data") # Używamy DateInput dla łatwiejszego wyboru
 
     class Meta:
         model = Transaction
