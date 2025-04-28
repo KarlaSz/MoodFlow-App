@@ -27,6 +27,7 @@ IDEA_STATUS = [
 TYPE_CHOICES = [
         ('expense', 'Wydatek'),
         ('income', 'Przychód'),
+        ('saving', 'Oszczędność'),
     ]
 
 class Task(models.Model):

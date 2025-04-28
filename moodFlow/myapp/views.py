@@ -502,47 +502,45 @@ def chat(request, conversation_id=None):
 #finanse
 @login_required
 def finance(request):
-    """Główny widok strony finansowej."""
     user = request.user
     today = timezone.now().date()
     current_month = today.month
     current_year = today.year
 
-    # 1. Pobierz ostatnie transakcje (np. 10) - bez zmian
+    # 1. Ostatnie transakcje - bez zmian
     recent_transactions = Transaction.objects.filter(user=user).order_by('-date', '-created_at')[:10]
 
-    # 2. Oblicz podsumowanie BIEŻĄCEGO miesiąca
-    #    Filtrujemy transakcje użytkownika z bieżącego roku i miesiąca
+    # 2. Podsumowanie miesiąca
     monthly_transactions = Transaction.objects.filter(
         user=user,
         date__year=current_year,
         date__month=current_month
     )
+    monthly_income_sum = monthly_transactions.filter(type='income').aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    monthly_expenses_sum = monthly_transactions.filter(type='expense').aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
 
-    #    Obliczamy sumę przychodów dla bieżącego miesiąca
-    #    Używamy 'income' jako wewnętrznej nazwy typu (zgodnie z sugestią w komentarzu modelu)
-    #    Jeśli Twój model używa 'przychod', zmień 'income' na 'przychod' poniżej.
-    monthly_income_sum = monthly_transactions.filter(type='income').aggregate(
-        total=Sum('amount')
-    )['total'] or Decimal('0.00') # aggregate zwraca słownik {'total': suma}, .get('total') lub ['total'] da wartość lub None
+    # Opcja B: Bilans = Przychody - Wydatki - Oszczędności_z_miesiąca
 
-    #    Obliczamy sumę wydatków dla bieżącego miesiąca
-    #    Używamy 'expense' jako wewnętrznej nazwy typu.
-    #    Jeśli Twój model używa 'wydatek', zmień 'expense' na 'wydatek' poniżej.
-    monthly_expenses_sum = monthly_transactions.filter(type='expense').aggregate(
+    monthly_savings_sum = monthly_transactions.filter(type='saving').aggregate(
         total=Sum('amount')
     )['total'] or Decimal('0.00')
 
-    #    Obliczamy bilans dla bieżącego miesiąca
-    monthly_balance = monthly_income_sum - monthly_expenses_sum
+    monthly_balance = monthly_income_sum - monthly_expenses_sum - monthly_savings_sum
 
-    # Przygotuj dane dla podsumowania
+    # --- Obliczanie ŁĄCZNYCH oszczędności ---
+    # Sumujemy WSZYSTKIE transakcje typu 'saving' dla użytkownika
+    total_savings_sum = Transaction.objects.filter(
+        user=user,
+        type='saving'
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    # ------------------------------------------
+
     summary_data = {
-        'balance': monthly_balance,
-        'expenses': monthly_expenses_sum,
-        'income': monthly_income_sum,
-        'savings': Decimal('0.00'), # Placeholder - logika oszczędności do dodania później
-        'previous_balance': Decimal('0.00'), # Placeholder - logika bilansu poprzedniego miesiąca do dodania później
+        'balance': monthly_balance, # Bilans miesięczny
+        'expenses': monthly_expenses_sum, # Wydatki miesięczne
+        'income': monthly_income_sum, # Przychody miesięczne
+        'savings': total_savings_sum, # <-- Używam łącznej sumy oszczędności
+        'previous_balance': Decimal('0.00'), # Placeholder
     }
 
     # 3. Przygotuj dane dla budżetu (placeholder)
@@ -569,60 +567,45 @@ def finance(request):
 # --- Upewnij się, że typy w add_transaction pasują do modelu ---
 @login_required
 def add_transaction(request, transaction_type):
-    # transaction_type pochodzi z URL ('przychod' lub 'wydatek')
     user = request.user
 
-    # Mapa typów z URL na typy wewnętrzne używane w modelu
-    # Upewnij się, że klucze ('przychod', 'wydatek') pasują do Twoich URL patterns,
-    # a wartości ('income', 'expense') pasują do wartości pola 'type' w modelu Transaction.
+    # Zaktualizowane mapowanie typów z URL na typy wewnętrzne
     type_mapping = {
-        'przychod': 'income',  # Polski URL -> Angielski typ w modelu
-        'wydatek': 'expense', # Polski URL -> Angielski typ w modelu
+        'przychod': 'income',
+        'wydatek': 'expense',
+        'oszczednosc': 'saving', # <-- Dodane mapowanie dla oszczędności
     }
     internal_transaction_type = type_mapping.get(transaction_type)
 
-    # Sprawdzenie, czy typ z URL jest poprawny
     if not internal_transaction_type:
-        print(f"--- [DEBUG] BŁĄD: Nieprawidłowy typ transakcji w URL: {transaction_type}")
         raise Http404(f"Nieprawidłowy typ transakcji w URL: {transaction_type}")
 
-    # Pobranie przyjaznej nazwy typu do wyświetlenia (np. "Przychód", "Wydatek")
-    # Zakładając, że TYPE_CHOICES w modelu Transaction wygląda tak: [('expense', 'Wydatek'), ('income', 'Przychód')]
-    # Jeśli jest inaczej, dostosuj `TYPE_CHOICES` poniżej lub zaimportuj z models.py
-    try:
-        # Zaimportuj TYPE_CHOICES z models.py jeśli tam są zdefiniowane
-        from .models import TYPE_CHOICES
-        type_display_name = dict(TYPE_CHOICES).get(internal_transaction_type, internal_transaction_type.capitalize())
-    except (ImportError, NameError):
-        # Fallback, jeśli nie można zaimportować TYPE_CHOICES
-        type_display_name = transaction_type.capitalize() # Użyje 'Przychod' lub 'Wydatek' z URL
+    # Pobierz przyjazną nazwę typu (np. "Oszczędność")
+    type_display_name = dict(TYPE_CHOICES).get(internal_transaction_type, internal_transaction_type.capitalize())
 
     if request.method == 'POST':
+        # Przekazujemy transaction_type do formularza, jeśli formularz go potrzebuje
+        # (np. do filtrowania kategorii)
         form = TransactionForm(request.POST, user=user, transaction_type=internal_transaction_type)
         if form.is_valid():
             try:
                 transaction = form.save(commit=False)
                 transaction.user = user
-                # Ustawiamy typ transakcji na podstawie wewnętrznego typu ('income'/'expense')
-                transaction.type = internal_transaction_type
+                transaction.type = internal_transaction_type # Ustaw poprawny typ
                 transaction.save()
-                print(f"--- [DEBUG] Zapisano transakcję typu: {internal_transaction_type}")
-                # messages.success(request, f"Dodano {type_display_name.lower()}!") # Opcjonalny komunikat
+                # messages.success(request, f"Dodano {type_display_name.lower()}!")
                 return redirect('finance')
             except Exception as e:
-                print(f"--- [DEBUG] BŁĄD podczas ZAPISU transakcji: {e} ---")
-                # Można dodać logowanie błędu lub komunikat dla użytkownika
-                form.add_error(None, "Wystąpił nieoczekiwany błąd podczas zapisu transakcji.") # Błąd ogólny formularza
+                print(f"Błąd zapisu transakcji: {e}")
+                form.add_error(None, "Wystąpił błąd podczas zapisu.")
         else:
-            print(f"--- [DEBUG] Formularz NIE JEST PRAWIDŁOWY (typ: {internal_transaction_type}) ---")
-            print("--- [DEBUG] Błędy formularza:\n", form.errors.as_json()) # .as_json() jest często bardziej czytelne
-    else: # GET request
+             print("Błędy formularza:", form.errors.as_json())
+    else: # GET
         form = TransactionForm(user=user, transaction_type=internal_transaction_type)
-        print(f"--- [DEBUG] Tworzę formularz dla GET, typ: {internal_transaction_type}")
 
     context = {
         'form': form,
         'type_display': type_display_name,
-        'transaction_type_from_url': transaction_type, # Potrzebne do warunków w szablonie add_transaction.html
+        'transaction_type_from_url': transaction_type, # Dla warunków w szablonie
     }
     return render(request, 'myapp/add_transaction.html', context)

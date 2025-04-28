@@ -17,8 +17,11 @@
                     <a href="{% url 'add_transaction' transaction_type='wydatek' %}" class="btn btn-outline-light me-2">
                         <i class="bi bi-plus-circle"></i> Nowy wydatek
                     </a>
-                    <a href="{% url 'add_transaction' transaction_type='przychod' %}" class="btn btn-outline-light">
+                    <a href="{% url 'add_transaction' transaction_type='przychod' %}" class="btn btn-outline-light me-2">
                         <i class="bi bi-plus-circle-fill"></i> Nowy przychód
+                    </a>
+                    <a href="{% url 'add_transaction' transaction_type='oszczednosc' %}" class="btn btn-outline-light">
+                        <i class="bi bi-piggy-bank"></i> Dodaj oszczędność
                     </a>
                 </div>
             </div>
@@ -32,49 +35,46 @@
             <div class="card bg-dark text-white h-100">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase mb-2">Bilans miesiąca</h6>
-                    {# Dynamiczny bilans + kolor #}
-                    {# Używamy zmiennej summary.balance obliczonej w widoku #}
                     <h2 class="mb-0 {% if summary.balance >= 0 %}text-success{% else %}text-danger{% endif %}">
                         {% if summary.balance >= 0 %}+{% endif %}{{ summary.balance|floatformat:2|intcomma }} zł
                     </h2>
-                    {# Placeholder dla poprzedniego bilansu - bez zmian na razie #}
                     <small class="text-white-50">Poprzedni: {{ summary.previous_balance|floatformat:2|intcomma }} zł</small>
                 </div>
             </div>
         </div>
+        <!-- Karta Wydatki -->
         <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-white h-100">
+             <div class="card bg-dark text-white h-100">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase mb-2">Wydatki</h6>
-                    {# Dynamiczne wydatki #}
-                    {# Używamy zmiennej summary.expenses obliczonej w widoku #}
                     <h2 class="mb-0 text-danger">{{ summary.expenses|floatformat:2|intcomma }} zł</h2>
                     <small class="text-white-50">Ten miesiąc</small>
                 </div>
             </div>
         </div>
+        <!-- Karta Przychody -->
         <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-white h-100">
+             <div class="card bg-dark text-white h-100">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase mb-2">Przychody</h6>
-                    {# Dynamiczne przychody #}
-                    {# Używamy zmiennej summary.income obliczonej w widoku #}
                     <h2 class="mb-0 text-info">{{ summary.income|floatformat:2|intcomma }} zł</h2>
                     <small class="text-white-50">Ten miesiąc</small>
                 </div>
             </div>
         </div>
+        <!-- Karta Oszczędności -->
         <div class="col-md-3 mb-3">
             <div class="card bg-dark text-white h-100">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase mb-2">Oszczędności</h6>
-                     {# Placeholder dla oszczędności - bez zmian na razie #}
-                    <h2 class="mb-0">{{ summary.savings|floatformat:2|intcomma }} zł</h2>
+                     {# Wyświetlamy łączną sumę oszczędności #}
+                    <h2 class="mb-0 text-warning">{{ summary.savings|floatformat:2|intcomma }} zł</h2>
                     <small class="text-white-50">Łącznie</small>
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- Wykresy i wizualizacje (Pozostają placeholderami na razie) -->
     <div class="row mb-4">
@@ -138,46 +138,47 @@
 <!--    </div>-->
 
     <!-- Najnowsze transakcje i AI Asystent -->
-    <div class="row">
+     <div class="row">
         <div class="col-md-8 mb-3">
             <div class="card bg-dark text-white">
-                <div class="card-header d-flex justify-content-between">
+                 <div class="card-header d-flex justify-content-between">
                     <h5 class="mb-0">Ostatnie transakcje</h5>
-                    {# Link do pełnej listy transakcji (do zrobienia) #}
+                                         {# Link do pełnej listy transakcji (do zrobienia) #}
                     {# <a href="{% url 'transaction_list' %}" class="btn btn-sm btn-outline-light">Zobacz wszystkie</a> #}
                     <button class="btn btn-sm btn-outline-light" disabled>Zobacz wszystkie</button> {# Na razie wyłączony #}
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush bg-transparent">
-                        {# Pętla przez ostatnie transakcje #}
                         {% for tx in recent_transactions %}
-                             <div class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center py-3">
-                                 <div class="d-flex align-items-center">
-                                     <div class="me-3">
-                                         {# Dynamiczna ikona na podstawie typu WEWNĘTRZNEGO #}
-                                         {% if tx.type == 'expense' %} {# Użyj 'expense' lub 'wydatek' - zależnie od modelu #}
-                                             <i class="bi bi-cart-fill text-danger fs-4"></i>
-                                         {% elif tx.type == 'income' %} {# Użyj 'income' lub 'przychod' - zależnie od modelu #}
-                                             <i class="bi bi-cash-stack text-success fs-4"></i>
-                                         {% else %}
-                                             <i class="bi bi-question-circle fs-4"></i> {# Ikona dla nieznanego typu #}
-                                         {% endif %}
-                                     </div>
-                                     <div>
-                                         <h6 class="mb-0">{{ tx.category.name|default:"Bez kategorii" }}</h6>
-                                         <small class="text-white-50">{{ tx.description|default:"" }}</small>
-                                     </div>
-                                 </div>
-                                 <div class="text-end">
-                                     {# Logika wyświetlania kwoty - plus/minus #}
-                                     <div class="{% if tx.type == 'expense' %}text-danger{% elif tx.type == 'income' %}text-success{% endif %}">
-                                         {% if tx.type == 'expense' %}-{% elif tx.type == 'income' %}+{% endif %}{{ tx.amount|floatformat:2|intcomma }} zł
-                                     </div>
-                                     <small class="text-white-50">{{ tx.date|date:"d M Y" }}</small>
-                                 </div>
-                             </div>
+                        <div class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {# Dynamiczna ikona - DODANO OBSŁUGĘ 'saving' #}
+                                    {% if tx.type == 'expense' %}
+                                        <i class="bi bi-cart-fill text-danger fs-4"></i>
+                                    {% elif tx.type == 'income' %}
+                                        <i class="bi bi-cash-stack text-success fs-4"></i>
+                                    {% elif tx.type == 'saving' %}
+                                        <i class="bi bi-piggy-bank text-warning fs-4"></i>
+                                    {% else %}
+                                        <i class="bi bi-question-circle fs-4"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ tx.category.name|default:"Bez kategorii" }}</h6>
+                                    <small class="text-white-50">{{ tx.description|default:"" }}</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="{% if tx.type == 'expense' %}text-danger{% elif tx.type == 'income' %}text-success{% elif tx.type == 'saving' %}text-warning{% endif %}">
+                                    {% if tx.type == 'expense' %}-{% elif tx.type == 'income' %}+{% elif tx.type == 'saving' %} {% endif %}
+                                    {{ tx.amount|floatformat:2|intcomma }} zł
+                                </div>
+                                <small class="text-white-50">{{ tx.date|date:"d M Y" }}</small>
+                            </div>
+                        </div>
                         {% empty %}
-                        <div class="list-group-item bg-dark text-white border-secondary text-center py-3">
+                         <div class="list-group-item bg-dark text-white border-secondary text-center py-3">
                             <p class="text-white-50 mb-0">Brak zarejestrowanych transakcji.</p>
                         </div>
                         {% endfor %}
@@ -185,17 +186,6 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card bg-dark text-white">
-                 <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-robot"></i> Agent AI - Analizy</h5>
-                 </div>
-                <div class="card-body">
-                    <p class="text-white-50">Analizy AI w budowie...</p>
-                 </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Przypomnienia o płatnościach (Placeholder na razie) -->
     <div class="row">

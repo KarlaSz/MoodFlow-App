@@ -12,8 +12,10 @@
                     <h2 class="mb-0">
                         {% if transaction_type_from_url == 'przychod' %}
                             <i class="bi bi-plus-circle-fill text-info"></i> Nowy {{ type_display }}
-                        {% else %}
+                         {% elif transaction_type_from_url == 'wydatek' %}
                             <i class="bi bi-plus-circle text-danger"></i> Nowy {{ type_display }}
+                        {% elif transaction_type_from_url == 'oszczednosc' %}
+                            <i class="bi bi-piggy-bank text-warning"></i> Dodaj {{ type_display }}
                         {% endif %}
                     </h2>
                 </div>
@@ -83,8 +85,9 @@
 
 
 
-                        <div class="d-grid gap-2 mt-4">
-                             <button type="submit" class="btn {% if transaction_type_from_url == 'przychod' %}btn-info{% else %}btn-danger{% endif %} btn-lg">
+                         <div class="d-grid gap-2 mt-4">
+                             {# Dynamiczny kolor przycisku zapisu #}
+                             <button type="submit" class="btn {% if transaction_type_from_url == 'przychod' %}btn-info{% elif transaction_type_from_url == 'wydatek' %}btn-danger{% elif transaction_type_from_url == 'oszczednosc' %}btn-primary{% else %}btn-secondary{% endif %} btn-lg">
                                 <i class="bi bi-check-circle"></i> Zapisz {{ type_display }}
                             </button>
                              <a href="{% url 'finance' %}" class="btn btn-outline-secondary">
