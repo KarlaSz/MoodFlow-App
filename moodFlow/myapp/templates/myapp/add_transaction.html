@@ -33,53 +33,53 @@
 <!--                        {% crispy form %}-->
 
                         {% if form.non_field_errors %}
-     <div class="alert alert-danger">
-         {% for error in form.non_field_errors %}
-             <p>{{ error }}</p>
-         {% endfor %}
-     </div>
- {% endif %}
+                             <div class="alert alert-danger">
+                                 {% for error in form.non_field_errors %}
+                                     <p>{{ error }}</p>
+                                 {% endfor %}
+                             </div>
+                         {% endif %}
 
- {# Ręczne renderowanie pól - dostosuj klasy Bootstrap wg potrzeb #}
- <div class="mb-3">
-     <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
-     {{ form.category }} {# Użyj widgetu domyślnego - dodaj klasę jeśli trzeba np. form.category.field.widget.attrs.class = 'form-select' w Pythonie lub ręcznie #}
-     {% if form.category.errors %}
-         <div class="text-danger mt-1">
-             {% for error in form.category.errors %}<small>{{ error }}</small>{% endfor %}
-         </div>
-     {% endif %}
- </div>
+                         {# Ręczne renderowanie pól - dostosuj klasy Bootstrap wg potrzeb #}
+                         <div class="mb-3">
+                             <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                             {{ form.category }} {# Użyj widgetu domyślnego - dodaj klasę jeśli trzeba np. form.category.field.widget.attrs.class = 'form-select' w Pythonie lub ręcznie #}
+                             {% if form.category.errors %}
+                                 <div class="text-danger mt-1">
+                                     {% for error in form.category.errors %}<small>{{ error }}</small>{% endfor %}
+                                 </div>
+                             {% endif %}
+                         </div>
 
- <div class="mb-3">
-     <label for="{{ form.amount.id_for_label }}" class="form-label">{{ form.amount.label }}</label>
-     {{ form.amount }} {# Użyj widgetu domyślnego - dodaj klasę 'form-control' #}
-     {% if form.amount.errors %}
-         <div class="text-danger mt-1">
-             {% for error in form.amount.errors %}<small>{{ error }}</small>{% endfor %}
-         </div>
-     {% endif %}
- </div>
+                         <div class="mb-3">
+                             <label for="{{ form.amount.id_for_label }}" class="form-label">{{ form.amount.label }}</label>
+                             {{ form.amount }} {# Użyj widgetu domyślnego - dodaj klasę 'form-control' #}
+                             {% if form.amount.errors %}
+                                 <div class="text-danger mt-1">
+                                     {% for error in form.amount.errors %}<small>{{ error }}</small>{% endfor %}
+                                 </div>
+                             {% endif %}
+                         </div>
 
-  <div class="mb-3">
-     <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
-     {{ form.description }} {# Użyj widgetu domyślnego - dodaj klasę 'form-control' #}
-     {% if form.description.errors %}
-         <div class="text-danger mt-1">
-             {% for error in form.description.errors %}<small>{{ error }}</small>{% endfor %}
-         </div>
-     {% endif %}
- </div>
+                          <div class="mb-3">
+                             <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                             {{ form.description }} {# Użyj widgetu domyślnego - dodaj klasę 'form-control' #}
+                             {% if form.description.errors %}
+                                 <div class="text-danger mt-1">
+                                     {% for error in form.description.errors %}<small>{{ error }}</small>{% endfor %}
+                                 </div>
+                             {% endif %}
+                         </div>
 
-  <div class="mb-3">
-     <label for="{{ form.date.id_for_label }}" class="form-label">{{ form.date.label }}</label>
-     {{ form.date }} {# Użyj widgetu domyślnego - dodaj klasę 'form-control' #}
-     {% if form.date.errors %}
-         <div class="text-danger mt-1">
-             {% for error in form.date.errors %}<small>{{ error }}</small>{% endfor %}
-         </div>
-     {% endif %}
- </div>
+                          <div class="mb-3">
+                             <label for="{{ form.date.id_for_label }}" class="form-label">{{ form.date.label }}</label>
+                             {{ form.date }} {# Użyj widgetu domyślnego - dodaj klasę 'form-control' #}
+                             {% if form.date.errors %}
+                                 <div class="text-danger mt-1">
+                                     {% for error in form.date.errors %}<small>{{ error }}</small>{% endfor %}
+                                 </div>
+                             {% endif %}
+                         </div>
 
 
 

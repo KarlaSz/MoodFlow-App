@@ -508,127 +508,121 @@ def finance(request):
     current_month = today.month
     current_year = today.year
 
-    # 1. Pobierz ostatnie transakcje (np. 5)
-    recent_transactions = Transaction.objects.filter(user=user).order_by('-date', '-created_at')[:5]
+    # 1. Pobierz ostatnie transakcje (np. 10) - bez zmian
+    recent_transactions = Transaction.objects.filter(user=user).order_by('-date', '-created_at')[:10]
 
-    # 2. Oblicz podsumowanie miesiąca
+    # 2. Oblicz podsumowanie BIEŻĄCEGO miesiąca
+    #    Filtrujemy transakcje użytkownika z bieżącego roku i miesiąca
     monthly_transactions = Transaction.objects.filter(
         user=user,
         date__year=current_year,
         date__month=current_month
     )
 
-    monthly_income_sum = monthly_transactions.filter(type='przychod').aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-    monthly_expenses_sum = monthly_transactions.filter(type='wydatek').aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    #    Obliczamy sumę przychodów dla bieżącego miesiąca
+    #    Używamy 'income' jako wewnętrznej nazwy typu (zgodnie z sugestią w komentarzu modelu)
+    #    Jeśli Twój model używa 'przychod', zmień 'income' na 'przychod' poniżej.
+    monthly_income_sum = monthly_transactions.filter(type='income').aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00') # aggregate zwraca słownik {'total': suma}, .get('total') lub ['total'] da wartość lub None
+
+    #    Obliczamy sumę wydatków dla bieżącego miesiąca
+    #    Używamy 'expense' jako wewnętrznej nazwy typu.
+    #    Jeśli Twój model używa 'wydatek', zmień 'expense' na 'wydatek' poniżej.
+    monthly_expenses_sum = monthly_transactions.filter(type='expense').aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+
+    #    Obliczamy bilans dla bieżącego miesiąca
     monthly_balance = monthly_income_sum - monthly_expenses_sum
 
-    # Przygotuj dane dla podsumowania - na razie bez poprzedniego miesiąca i oszczędności
+    # Przygotuj dane dla podsumowania
     summary_data = {
         'balance': monthly_balance,
         'expenses': monthly_expenses_sum,
         'income': monthly_income_sum,
-        'savings': Decimal('0.00'), # Placeholder - do dodania później
-        'previous_balance': Decimal('0.00'), # Placeholder - do dodania później
+        'savings': Decimal('0.00'), # Placeholder - logika oszczędności do dodania później
+        'previous_balance': Decimal('0.00'), # Placeholder - logika bilansu poprzedniego miesiąca do dodania później
     }
 
-    # 3. Przygotuj dane dla budżetu (placeholder - do dodania później)
-    budget_data = [] # Pusta lista na razie
+    # 3. Przygotuj dane dla budżetu (placeholder)
+    budget_data = []
 
-    # 4. Przygotuj dane dla celów (placeholder - do dodania później)
-    goals_data = [] # Pusta lista na razie
+    # 4. Przygotuj dane dla celów (placeholder)
+    goals_data = []
 
-    # 5. Przygotuj dane dla nadchodzących płatności (placeholder - do dodania później)
-    upcoming_payments_data = [] # Pusta lista na razie
+    # 5. Przygotuj dane dla nadchodzących płatności (placeholder)
+    upcoming_payments_data = []
 
+    # Kontekst przekazywany do szablonu
     context = {
         'recent_transactions': recent_transactions,
-        'summary': summary_data,
-        'budgets': budget_data, # Przekaż puste listy/placeholdery
+        'summary': summary_data,  # Przekazujemy obliczone podsumowanie
+        'budgets': budget_data,
         'goals': goals_data,
         'upcoming_payments': upcoming_payments_data,
-        'year': datetime.now().year # Z global_context, ale dla pewności
+        # 'year' jest już w global_context, ale można zostawić dla pewności
+        'year': today.year
     }
     return render(request, "myapp/finanse.html", context)
 
+# --- Upewnij się, że typy w add_transaction pasują do modelu ---
 @login_required
 def add_transaction(request, transaction_type):
-    # ----- DODAJ TEN PRINT -----
-    print(f"--- [DEBUG] Wszedłem do add_transaction --- Typ URL: {transaction_type}, Metoda: {request.method}")
-    # ---------------------------
-
+    # transaction_type pochodzi z URL ('przychod' lub 'wydatek')
     user = request.user
 
+    # Mapa typów z URL na typy wewnętrzne używane w modelu
+    # Upewnij się, że klucze ('przychod', 'wydatek') pasują do Twoich URL patterns,
+    # a wartości ('income', 'expense') pasują do wartości pola 'type' w modelu Transaction.
     type_mapping = {
-        'przychod': 'income',
-        'wydatek': 'expense',
+        'przychod': 'income',  # Polski URL -> Angielski typ w modelu
+        'wydatek': 'expense', # Polski URL -> Angielski typ w modelu
     }
     internal_transaction_type = type_mapping.get(transaction_type)
 
+    # Sprawdzenie, czy typ z URL jest poprawny
     if not internal_transaction_type:
-        print(f"--- [DEBUG] BŁĄD: Nieprawidłowy typ transakcji w URL: {transaction_type}") # Dodaj logowanie błędu
+        print(f"--- [DEBUG] BŁĄD: Nieprawidłowy typ transakcji w URL: {transaction_type}")
         raise Http404(f"Nieprawidłowy typ transakcji w URL: {transaction_type}")
 
-    type_display_name = dict(TYPE_CHOICES).get(internal_transaction_type, internal_transaction_type.capitalize())
+    # Pobranie przyjaznej nazwy typu do wyświetlenia (np. "Przychód", "Wydatek")
+    # Zakładając, że TYPE_CHOICES w modelu Transaction wygląda tak: [('expense', 'Wydatek'), ('income', 'Przychód')]
+    # Jeśli jest inaczej, dostosuj `TYPE_CHOICES` poniżej lub zaimportuj z models.py
+    try:
+        # Zaimportuj TYPE_CHOICES z models.py jeśli tam są zdefiniowane
+        from .models import TYPE_CHOICES
+        type_display_name = dict(TYPE_CHOICES).get(internal_transaction_type, internal_transaction_type.capitalize())
+    except (ImportError, NameError):
+        # Fallback, jeśli nie można zaimportować TYPE_CHOICES
+        type_display_name = transaction_type.capitalize() # Użyje 'Przychod' lub 'Wydatek' z URL
 
     if request.method == 'POST':
-        # ----- DODAJ TEN PRINT -----
-        print(f"--- [DEBUG] Przetwarzam POST w add_transaction ---")
-        print("--- [DEBUG] Dane POST:", request.POST)
-        # ---------------------------
-
         form = TransactionForm(request.POST, user=user, transaction_type=internal_transaction_type)
-
-        # ----- DODAJ TEN PRINT PRZED is_valid -----
-        print(f"--- [DEBUG] Instancja formularza utworzona. Sprawdzam is_valid()... ---")
-        # ----------------------------------------
-
         if form.is_valid():
-            print("--- [DEBUG] Formularz JEST PRAWIDŁOWY. Zapisywanie... ---")
             try:
                 transaction = form.save(commit=False)
                 transaction.user = user
+                # Ustawiamy typ transakcji na podstawie wewnętrznego typu ('income'/'expense')
                 transaction.type = internal_transaction_type
                 transaction.save()
-                print("--- [DEBUG] Transakcja zapisana. Przekierowanie na 'finance'. ---")
-                # messages.success(request, f"Dodano {type_display_name.lower()}!") # Możesz odkomentować, jeśli chcesz komunikaty
+                print(f"--- [DEBUG] Zapisano transakcję typu: {internal_transaction_type}")
+                # messages.success(request, f"Dodano {type_display_name.lower()}!") # Opcjonalny komunikat
                 return redirect('finance')
             except Exception as e:
-                # Złap potencjalne błędy przy zapisie
                 print(f"--- [DEBUG] BŁĄD podczas ZAPISU transakcji: {e} ---")
-                # Tutaj możesz dodać komunikat błędu dla użytkownika, jeśli chcesz
-                # messages.error(request, "Wystąpił nieoczekiwany błąd podczas zapisywania transakcji.")
-                # Renderuj stronę ponownie z błędem (lub przekieruj z komunikatem)
-                context = {
-                    'form': form, # Przekaż formularz z danymi, które użytkownik wprowadził
-                    'type_display': type_display_name,
-                    'transaction_type_from_url': transaction_type,
-                    'error_message': 'Wystąpił błąd podczas zapisu. Spróbuj ponownie.' # Prosty komunikat
-                }
-                return render(request, 'myapp/add_transaction.html', context)
-
+                # Można dodać logowanie błędu lub komunikat dla użytkownika
+                form.add_error(None, "Wystąpił nieoczekiwany błąd podczas zapisu transakcji.") # Błąd ogólny formularza
         else:
-            # ----- ZMODYFIKOWANY PRINT DLA BŁĘDÓW -----
-            print(f"--- [DEBUG] Formularz NIE JEST PRAWIDŁOWY (typ: {transaction_type}) ---")
-            # Użyj form.errors.as_text() dla czytelniejszego formatu w konsoli
-            print("--- [DEBUG] Błędy formularza:\n", form.errors.as_text())
-            # ------------------------------------------
+            print(f"--- [DEBUG] Formularz NIE JEST PRAWIDŁOWY (typ: {internal_transaction_type}) ---")
+            print("--- [DEBUG] Błędy formularza:\n", form.errors.as_json()) # .as_json() jest często bardziej czytelne
     else: # GET request
-        print(f"--- [DEBUG] Przetwarzam GET w add_transaction ---") # Print dla GET
         form = TransactionForm(user=user, transaction_type=internal_transaction_type)
-        # Sprawdźmy, czy kategorie są ładowane poprawnie w GET
-        print(f"--- [DEBUG] Kategorie załadowane do formularza (GET): {form.fields['category'].queryset.count()} sztuk ---")
+        print(f"--- [DEBUG] Tworzę formularz dla GET, typ: {internal_transaction_type}")
 
-
-    # Przygotuj kontekst, również w przypadku błędu zapisu w bloku try/except powyżej
-    if 'context' not in locals(): # Jeśli kontekst nie został utworzony w bloku except
-        context = {
-            'form': form, # Przekaż formularz (pusty dla GET, z błędami dla POST)
-            'type_display': type_display_name,
-            'transaction_type_from_url': transaction_type,
-        }
-        # Dodaj błędy do kontekstu, aby można je było wyświetlić w szablonie
-        if request.method == 'POST' and not form.is_valid():
-             context['form_errors'] = form.errors # Przekaż błędy do szablonu
-
-    print(f"--- [DEBUG] Renderuję szablon add_transaction.html ---") # Print przed renderowaniem
+    context = {
+        'form': form,
+        'type_display': type_display_name,
+        'transaction_type_from_url': transaction_type, # Potrzebne do warunków w szablonie add_transaction.html
+    }
     return render(request, 'myapp/add_transaction.html', context)
