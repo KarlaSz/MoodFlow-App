@@ -1,0 +1,106 @@
+# MoodFlow - Aplikacja do Zarządzania Życiem
+
+MoodFlow to kompleksowa aplikacja webowa zaprojektowana, aby pomóc użytkownikom w zintegrowanym zarządzaniu różnymi aspektami ich codziennego życia: czasem, zadaniami, nastrojem oraz finansami osobistymi. Aplikacja została stworzona jako projekt w ramach studiów podyplomowych, wykorzystując Python i framework Django.
+
+![image](https://github.com/user-attachments/assets/1b2fd46e-cffc-4e1f-8e16-5d36f923db19)
+
+
+## Kluczowe Funkcjonalności
+
+*   **Dashboard (Strona Główna):** Centralny punkt startowy z szybkim dostępem do głównych modułów, widżetem pogodowym (integracja z API IMGW) oraz inspirującymi cytatami.
+*   **Asystent AI:** Spersonalizowany chatbot oparty na API OpenAI (modele GPT), wzbogacony o możliwość wyszukiwania aktualnych informacji w Google dzięki integracji z SerpApi. Rozmowy są przechowywane w bazie danych i przypisane do użytkownika.
+*   **Dziennik & Planner:** Moduł do tworzenia i zarządzania zadaniami, notatkami, pomysłami lub wpisami dziennika.
+    *   Możliwość powiązania **nastroju** z każdym wpisem.
+    *   Śledzenie **statusu** zadań (Nowy, W trakcie, Zrobione).
+    *   Filtrowanie i sortowanie wpisów.
+    *   Automatyczne zapisywanie daty utworzenia i modyfikacji.
+*   **Tracker Finansów:** Narzędzie do monitorowania przychodów i wydatków.
+    *   Rejestrowanie transakcji z możliwością kategoryzacji.
+    *   Podstawowa analiza i wizualizacja danych finansowych (wykresy).
+    *   Przeglądanie historii transakcji.
+*   **Zarządzanie Użytkownikami:** Bezpieczna rejestracja i logowanie użytkowników dzięki wbudowanemu systemowi Django Auth. Prywatność danych zapewniona poprzez izolację danych per użytkownik.
+
+## Stos Technologiczny
+
+*   **Backend:** Python 3.x, Django
+*   **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5
+*   **Baza Danych:** SQLite3 na DBeaver
+*   **API Zewnętrzne:**
+    *   OpenAI API
+    *   SerpApi (Google Search Results API)
+    *   IMGW Synoptic Data API (dla danych pogodowych)
+
+## Instalacja i Uruchomienie Lokalne
+
+Aby uruchomić aplikację MoodFlow lokalnie na swoim komputerze, postępuj zgodnie z poniższymi krokami:
+
+1.  **Sklonuj repozytorium:**
+    ```bash
+    git clone https://github.com/KarlaSz/MoodFlow-App.git
+    cd MoodFlow-App
+    ```
+
+2.  **Utwórz i aktywuj środowisko wirtualne:**
+    ```bash
+    # Dla Windows
+    python -m venv venv
+    venv\Scripts\activate
+
+    # Dla macOS/Linux
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+
+3.  **Zainstaluj zależności:**
+    
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Skonfiguruj zmienne środowiskowe:**
+    Aplikacja wymaga kluczy API i innych ustawień konfiguracyjnych.
+    *   Skopiuj plik `.env.example` (jeśli istnieje) do `.env`:
+        ```bash
+        cp .env.example .env
+        ```
+        Jeśli plik `.env.example` nie istnieje, utwórz ręcznie plik `.env` w głównym katalogu projektu.
+    *   Edytuj plik `.env` i dodaj wymagane zmienne:
+        ```plaintext
+        # Przykład zawartości pliku .env
+        SECRET_KEY='twoj_bardzo_tajny_klucz_django_tutaj' # Wygeneruj nowy, silny klucz!
+        DEBUG=True # Ustaw na False w środowisku produkcyjnym
+        OPENAI_API_KEY='twoj_klucz_api_openai'
+        SERPAPI_API_KEY='twoj_klucz_api_serpapi'
+        # Opcjonalnie inne zmienne, np. klucz do API IMGW
+        ```
+    *   **WAŻNE:** Zdobądź własne klucze API z [OpenAI](https://platform.openai.com/) i [SerpApi](https://serpapi.com/). Nigdy nie udostępniaj swoich kluczy publicznie!
+
+5.  **Wykonaj migracje bazy danych:**
+    ```bash
+    python manage.py migrate
+    ```
+
+6.  **Utwórz superużytkownika (administratora):**
+    Pozwoli to na dostęp do panelu administracyjnego Django (`/admin/`). , 
+    ```bash
+    python manage.py createsuperuser
+    ```
+    Postępuj zgodnie z instrukcjami w terminalu, aby ustawić nazwę użytkownika, email i hasło.
+
+7.  **Uruchom serwer deweloperski:**
+    ```bash
+    python manage.py runserver
+    ```
+
+8.  **Otwórz aplikację w przeglądarce:**
+    Przejdź pod adres [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+
+## Użytkowanie
+
+*   Po uruchomieniu serwera, możesz zarejestrować nowego użytkownika lub zalogować się, jeśli już masz konto.
+*   Panel administracyjny Django jest dostępny pod adresem `/admin/` (wymaga logowania jako user/userpass).
+*   Eksploruj dostępne moduły (Dziennik, Finanse, Asystent AI) z poziomu strony głównej lub menu nawigacyjnego.
+
+## Autor
+
+*   **KarlaSz** - [GitHub](https://github.com/KarlaSz)
