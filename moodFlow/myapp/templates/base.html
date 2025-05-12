@@ -43,22 +43,28 @@
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'chat' %}active" aria-current="page{% endif %}" href="{% url 'chat' %}">ChatGPT</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'news' %}active" aria-current="page{% endif %}" href="{% url 'news' %}">Świat zewnętrzny</a>
+<!--                <li class="nav-item">-->
+<!--                    <a class="nav-link {% if request.resolver_match.url_name == 'news' %}active" aria-current="page{% endif %}" href="{% url 'news' %}">Świat zewnętrzny</a>-->
+<!--                </li>-->
+                   <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'todo_list' %}active" aria-current="page{% endif %}" href="{% url 'todo_list' %}">Dziennik aktywności</a>-->
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Life manager
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                        <li>
-                            <a class="dropdown-item {% if request.resolver_match.url_name == 'todo_list' %}active" aria-current="page{% endif %}" href="{% url 'todo_list' %}">Dziennik aktywności</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item {% if request.resolver_match.url_name == 'finance' %}active" aria-current="page{% endif %}" href="{% url 'finance' %}">Finanse</a>
-                        </li>
-                    </ul>
+                  <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'finance' %}active" aria-current="page{% endif %}" href="{% url 'finance' %}">Finanse</a>-->
                 </li>
+<!--                <li class="nav-item dropdown">-->
+<!--                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--                        Life manager-->
+<!--                    </a>-->
+<!--                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">-->
+<!--                        <li>-->
+<!--                            <a class="dropdown-item {% if request.resolver_match.url_name == 'todo_list' %}active" aria-current="page{% endif %}" href="{% url 'todo_list' %}">Dziennik aktywności</a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a class="dropdown-item {% if request.resolver_match.url_name == 'finance' %}active" aria-current="page{% endif %}" href="{% url 'finance' %}">Finanse</a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </li>-->
             </ul>
 
 
