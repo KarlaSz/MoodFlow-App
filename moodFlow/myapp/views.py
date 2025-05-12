@@ -29,7 +29,7 @@ def weather_api(request):
     url = 'https://danepubliczne.imgw.pl/api/data/synop'
     try:
         response = requests.get(url)
-        response.raise_for_status() # Dodaj sprawdzanie statusu HTTP
+        response.raise_for_status()
         weather_data = []
         data = response.json()
 
@@ -251,11 +251,8 @@ def chat(request, conversation_id=None):
     current_conversation = None
     messages_queryset = Message.objects.none()
 
-    # Zawsze pobieraj historię dla sidebara
-    conversation_history_list = Conversation.objects.all() # Używa domyślnego sortowania z Meta
-
-    # if not api_key:
-    #     error_message = "Błędna konfiguracja aplikacji (brak klucza API)."
+    # Zawsze pobieraj historię dla sidebara menu - history
+    conversation_history_list = Conversation.objects.all()
 
     if not openai_api_key:
         error_message = "Błędna konfiguracja aplikacji (brak klucza API OpenAI)."
