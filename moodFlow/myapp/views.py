@@ -15,6 +15,7 @@ from datetime import datetime
 from django.db.models import Sum, Q
 from decimal import Decimal
 
+
 #for footer
 def global_context(request):
     return {
