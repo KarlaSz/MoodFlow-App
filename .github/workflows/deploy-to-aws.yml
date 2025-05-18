@@ -1,4 +1,4 @@
-#plik do wdrazania pipeline czyli kodu na env prod AWS z automatu i pozniej tylko w githubie kliknac w actions deploys run
+#plik do wdrazania pipeline czyli kodu na env prod AWS z automatu i pozniej tylko w githubie kliknac w actions deploys run bedzie lecial
 name: Deploy to AWS Elastic Beanstalk
 on:
   push:
