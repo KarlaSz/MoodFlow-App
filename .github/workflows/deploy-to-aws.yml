@@ -1,4 +1,4 @@
-#plik do wdrazania pipeline czyli kodu na env prod AWS amaozn z automatu i pozniej tylko w githubie kliknac w actions deploys run bedzie lecial
+#plik do wdrazania pipeline cicd czyli kodu na env prod AWS amaozn z automatu i pozniej tylko w githubie kliknac w actions deploys run bedzie lecial
 name: Deploy to AWS Elastic Beanstalk
 on:
   push:
@@ -29,6 +29,6 @@ jobs:
         if: success()
         run: |
           pip install awsebcli
-          eb init moodFlow-app -p python-3.11 --region ${{ vars.AWS_REGION }}
-          eb deploy moodFlow-app-env
+          eb init MoodFlow -p python-3.11 --region ${{ vars.AWS_REGION }}
+          eb deploy MoodFlow-env
           
