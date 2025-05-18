@@ -29,6 +29,6 @@ jobs:
         if: success()
         run: |
           pip install awsebcli
-          eb init app-moodFlow -p python-3.11 --region ${{ vars.AWS_REGION }}
-          eb deploy App-moodFlow-env
+          eb init MoodFlow -p python-3.11 --region ${{ vars.AWS_REGION }}
+          eb deploy MoodFlow-env
           
