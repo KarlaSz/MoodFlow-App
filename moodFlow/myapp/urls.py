@@ -5,7 +5,7 @@ from .views import (home, finance, news, chat, todo_list, edit_task, delete_task
 urlpatterns = [
     # URL-e dla głównych widoków
     path('', home, name='home'),  # Strona główna - lista zadań
-    path('weather_api', weather_api, name='weather_api'), #http://localhost:8000/?city=KRAKÓW
+    path('weather_api', weather_api, name='weather_api'),
     path('dziennik', todo_list, name='todo_list'),  # dziennik aktywnosci - lista zadań
     path('finanse', finance, name='finance'), #finanse
     path('wiadomosci', news, name='news'),

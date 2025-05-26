@@ -96,6 +96,9 @@ DATABASES = {
     }
 }
 
+#wskazuje na standardową stronę logowania panelu admin,  automatycznie przekieruje usera na adres /admin/login/?next=/finanse/
+LOGIN_URL = 'admin:login'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

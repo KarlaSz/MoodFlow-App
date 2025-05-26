@@ -19,7 +19,7 @@ from django.urls import path, include  # import include,for reading URL from mya
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # admin panel
+    path('admin/', admin.site.urls),  # admin panel i  Ta linia umożliwia działanie 'admin:login'
     path('', include('myapp.urls')),  # myapp endpoints
 ]
 

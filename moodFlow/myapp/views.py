@@ -92,10 +92,6 @@ def weather_api(request):
         print(f"Nieoczekiwany błąd w weather_api: {e}") # Logowanie błędu na serwerze
         return JsonResponse({'error': f'Wystąpił wewnętrzny błąd serwera: {str(e)}'}, status=500)
 
-def finance(request):
-    """Strona finansowa"""
-
-    return render(request, "myapp/finanse.html")
 
 def news(request):
     """Strona news"""
