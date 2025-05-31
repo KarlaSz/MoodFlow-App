@@ -16,7 +16,7 @@ MoodFlow to kompleksowa aplikacja webowa zaprojektowana, aby pomóc użytkowniko
     *   Automatyczne zapisywanie daty utworzenia i modyfikacji.
 *   **Tracker Finansów:** Narzędzie do monitorowania przychodów i wydatków.
     *   Rejestrowanie transakcji z możliwością kategoryzacji.
-    *   Podstawowa analiza i wizualizacja danych finansowych (wykresy).
+    *   Podstawowa analiza i wizualizacja danych finansowych.
     *   Przeglądanie historii transakcji.
 *   **Zarządzanie Użytkownikami:** Bezpieczna rejestracja i logowanie użytkowników (l:user/pass:merito25) dzięki wbudowanemu systemowi Django Auth. Prywatność danych zapewniona poprzez izolację danych per użytkownik.
 
