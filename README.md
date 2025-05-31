@@ -57,7 +57,8 @@ Aby uruchomić aplikację MoodFlow lokalnie na swoim komputerze, postępuj zgodn
     pip install -r requirements.txt
     ```
 
-4.  **Skonfiguruj zmienne środowiskowe:**
+4.  **Skonfiguruj zmienne środowiskowe:**Jeśli nie chce to możesz od razu uruchomić serwer - next step 5.
+
     Aplikacja wymaga kluczy API i innych ustawień konfiguracyjnych.
     *   Skopiuj plik `.env.example` (jeśli istnieje) do `.env`:
         ```bash
@@ -73,34 +74,22 @@ Aby uruchomić aplikację MoodFlow lokalnie na swoim komputerze, postępuj zgodn
         SERPAPI_API_KEY='twoj_klucz_api_serpapi'
         # Opcjonalnie inne zmienne, np. klucz do API IMGW
         ```
-    *   **WAŻNE:** Zdobądź własne klucze API z [OpenAI](https://platform.openai.com/) i [SerpApi](https://serpapi.com/). Nigdy nie udostępniaj swoich kluczy publicznie!
+    *   **WAŻNE:** Zdobądź własne klucze API z [OpenAI](https://platform.openai.com/) i [SerpApi](https://serpapi.com/). Nigdy nie udostępniaj swoich kluczy publicznie. *(tutaj wpływa to na działanie chataGpt)
 
-5.  **Wykonaj migracje bazy danych:**
-    ```bash
-    python manage.py migrate
-    ```
-
-6.  **Utwórz superużytkownika (administratora):**
-    Pozwoli to na dostęp do panelu administracyjnego Django (`/admin/`). , 
-    ```bash
-    python manage.py createsuperuser
-    ```
-    Postępuj zgodnie z instrukcjami w terminalu, aby ustawić nazwę użytkownika, email i hasło.
-
-7.  **Uruchom serwer deweloperski:**
+5.  **Uruchom serwer deweloperski:**
     ```bash
     python manage.py runserver
     ```
 
-8.  **Otwórz aplikację w przeglądarce:**
+6.  **Otwórz aplikację w przeglądarce:**
     Przejdź pod adres [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
 
 ## Użytkowanie
 
 *   Po uruchomieniu serwera, możesz zarejestrować nowego użytkownika lub zalogować się, jeśli już masz konto.
-*   Panel administracyjny Django jest dostępny pod adresem `/admin/` (wymaga logowania jako user/userpass).
+*   Panel administracyjny Django jest dostępny pod adresem `/admin/` (wymaga logowania jako user/merito25).
 *   Eksploruj dostępne moduły (Dziennik, Finanse, Asystent AI) z poziomu strony głównej lub menu nawigacyjnego.
 
 ## Autor
 
-*   **KarlaSz** - [GitHub](https://github.com/KarlaSz)
+*   **Karolina Szymaszkiewicz** 

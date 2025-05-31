@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.utils.text import Truncator # Do skracania tytułu
 import uuid
 from django.conf import settings
-from decimal import Decimal
+# from decimal import Decimal
 
 
 MOOD_CHOICES = [
