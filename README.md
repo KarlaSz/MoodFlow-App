@@ -37,7 +37,6 @@ Aby uruchomić aplikację MoodFlow lokalnie na swoim komputerze, postępuj zgodn
 1.  **Sklonuj repozytorium:**
     ```bash
     git clone https://github.com/KarlaSz/MoodFlow-App.git
-    cd MoodFlow-App
     ```
 
 2.  **Utwórz i aktywuj środowisko wirtualne:**
@@ -57,12 +56,17 @@ Aby uruchomić aplikację MoodFlow lokalnie na swoim komputerze, postępuj zgodn
     pip install -r requirements.txt
     ```
 
-4.  **Skonfiguruj zmienne środowiskowe:**Jeśli nie chce to możesz od razu uruchomić serwer - next step 5.
+4.  **Otwórz projekt**
+    ```bash
+     cd moodflow
+    ```
+
+4.  **Skonfiguruj zmienne środowiskowe:** Jeśli nie chce to możesz od razu uruchomić serwer - next step 5.
 
     Aplikacja wymaga kluczy API i innych ustawień konfiguracyjnych.
     *   Skopiuj plik `.env.example` (jeśli istnieje) do `.env`:
         ```bash
-        cp .env.example .env
+#        cp .env.example .env
         ```
         Jeśli plik `.env.example` nie istnieje, utwórz ręcznie plik `.env` w głównym katalogu projektu.
     *   Edytuj plik `.env` i dodaj wymagane zmienne:

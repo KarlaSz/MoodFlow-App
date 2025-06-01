@@ -30,6 +30,6 @@ jobs:
         if: success()
         run: |
           pip install awsebcli
-          eb init production-moodflow -p python-3.13 --region ${{ vars.AWS_REGION }}
-          eb deploy production-moodflow-env
+          eb init v1-production-env-moodflow -p python-3.13 --region ${{ vars.AWS_REGION }}
+          eb deploy v1-production-env-moodflow-env
           
