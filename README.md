@@ -2,7 +2,8 @@
 
 MoodFlow to kompleksowa aplikacja webowa zaprojektowana, aby pomóc użytkownikom w zintegrowanym zarządzaniu różnymi aspektami ich codziennego życia: czasem, zadaniami, nastrojem oraz finansami osobistymi. Aplikacja została stworzona jako projekt w ramach studiów podyplomowych, wykorzystując Python i framework Django.
 
-![image](https://github.com/user-attachments/assets/1b2fd46e-cffc-4e1f-8e16-5d36f923db19)
+
+![moodflow](https://github.com/user-attachments/assets/e4095b06-3d2b-4f06-b4ef-89a26ea005b3)
 
 
 ## Kluczowe Funkcjonalności
