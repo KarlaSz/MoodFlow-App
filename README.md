@@ -5,6 +5,7 @@ MoodFlow to kompleksowa aplikacja webowa zaprojektowana, aby pomóc użytkowniko
 
 ![moodflow](https://github.com/user-attachments/assets/e4095b06-3d2b-4f06-b4ef-89a26ea005b3)
 ![mockuperdziennik](https://github.com/user-attachments/assets/9b04bfc7-bd62-44ef-91e2-3dca769b9dab)
+![mockuper](https://github.com/user-attachments/assets/18161f10-5183-4c8d-be7d-3dcfe19a0a5e)
 
 ![moodflow-app 3png](https://github.com/user-attachments/assets/ae201fd4-0b9b-4d6e-824a-78ecd98c5642)
 
