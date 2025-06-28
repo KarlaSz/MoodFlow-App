@@ -2,26 +2,30 @@
 
 MoodFlow to kompleksowa aplikacja webowa zaprojektowana, aby pomóc użytkownikom w zintegrowanym zarządzaniu różnymi aspektami ich codziennego życia: czasem, zadaniami, nastrojem oraz finansami osobistymi. Aplikacja została stworzona jako projekt w ramach studiów podyplomowych, wykorzystując Python i framework Django.
 
-
-![moodflow](https://github.com/user-attachments/assets/e4095b06-3d2b-4f06-b4ef-89a26ea005b3)
-![mockuperdziennik](https://github.com/user-attachments/assets/9b04bfc7-bd62-44ef-91e2-3dca769b9dab)
-![mockuper](https://github.com/user-attachments/assets/18161f10-5183-4c8d-be7d-3dcfe19a0a5e)
-
-![moodflow-app 3png](https://github.com/user-attachments/assets/ae201fd4-0b9b-4d6e-824a-78ecd98c5642)
-
 ## Kluczowe Funkcjonalności
-
 *   **Dashboard (Strona Główna):** Centralny punkt startowy z szybkim dostępem do głównych modułów, widżetem pogodowym (integracja z API IMGW) oraz inspirującymi cytatami.
-*   **Asystent AI:** Spersonalizowany chatbot oparty na API OpenAI (modele GPT), wzbogacony o możliwość wyszukiwania aktualnych informacji w Google dzięki integracji z SerpApi. Rozmowy są przechowywane w bazie danych i przypisane do użytkownika.
+  
+![moodflow](https://github.com/user-attachments/assets/e4095b06-3d2b-4f06-b4ef-89a26ea005b3)
+
 *   **Dziennik & Planner:** Moduł do tworzenia i zarządzania zadaniami, notatkami, pomysłami lub wpisami dziennika.
     *   Możliwość powiązania **nastroju** z każdym wpisem.
     *   Śledzenie **statusu** zadań (Nowy, W trakcie, Zrobione).
     *   Filtrowanie i sortowanie wpisów.
     *   Automatyczne zapisywanie daty utworzenia i modyfikacji.
+ 
+![mockuperdziennik](https://github.com/user-attachments/assets/9b04bfc7-bd62-44ef-91e2-3dca769b9dab)
+
+*   **Asystent AI:** Spersonalizowany chatbot oparty na API OpenAI (modele GPT), wzbogacony o możliwość wyszukiwania aktualnych informacji w Google dzięki integracji z SerpApi. Rozmowy są przechowywane w bazie danych i przypisane do użytkownika.
+  
+![mockuper](https://github.com/user-attachments/assets/18161f10-5183-4c8d-be7d-3dcfe19a0a5e)
+
 *   **Tracker Finansów:** Narzędzie do monitorowania przychodów i wydatków.
     *   Rejestrowanie transakcji z możliwością kategoryzacji.
     *   Podstawowa analiza i wizualizacja danych finansowych.
     *   Przeglądanie historii transakcji.
+![moodflow-app 3png](https://github.com/user-attachments/assets/ae201fd4-0b9b-4d6e-824a-78ecd98c5642)
+
+
 *   **Zarządzanie Użytkownikami:** Bezpieczna rejestracja i logowanie użytkowników (l:user/pass:merito25) dzięki wbudowanemu systemowi Django Auth. Prywatność danych zapewniona poprzez izolację danych per użytkownik.
 
 ## Stos Technologiczny
